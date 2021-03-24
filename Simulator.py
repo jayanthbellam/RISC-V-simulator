@@ -4,6 +4,7 @@ Created on Wed Mar 24 21:50:33 2021
 
 @author: jayanth
 """
+global Reg,Mem
 #register File
 Reg=[0 for j in range(32)]
 
@@ -37,4 +38,8 @@ def setToStart():
 
 def storeState():
     #creates a file which stores the current state of Registers and Memory
+    pass
+
+def run_RISCVsim():
+    #put it all together
     pass
