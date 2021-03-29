@@ -14,7 +14,7 @@ Mem=[0]*4000
 #Control Signals
 #A dictionary for holding the control signals
 #use keys like MUXB, RY,RZ (same as in lectures) for uniformity
-Control={}
+ControlSignals={}
 def readFile(K):
     #should return a line every time it is caled 
     return K.readline()
