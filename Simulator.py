@@ -4,13 +4,17 @@ Created on Wed Mar 24 21:50:33 2021
 
 @author: jayanth
 """
-global Reg,Mem
+global Reg,Mem,ControlSignals
 #register File
 Reg=[0 for j in range(32)]
 
 #memory
 Mem=[0]*4000
 
+#Control Signals
+#A dictionary for holding the control signals
+#use keys like MUXB, RY,RZ (same as in lectures) for uniformity
+Control={}
 def readFile(K):
     #should return a line every time it is caled 
     return K.readline()
@@ -20,7 +24,7 @@ def fetch(inst):
     return temp
 
 def decode():
-    #should return opcode,fun3,func6/7,rs1,rs2,rd,imm
+    #should update the CONTROL_SIGNALS
     pass
 
 def execute():
