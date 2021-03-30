@@ -1,9 +1,23 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 24 21:50:33 2021
+def bintodec(binary):
+    length=len(binary)
+    number=int(binary[1:],base=2)
+    if binary[0]=='0':
+        return number
+    return number-2**(length-1)
 
-@author: jayanth
-"""
+def dectobin(integer,length):
+    if integer>=0:
+        temp=bin(integer).replace('0b','')
+        le=len(temp)
+        binary='0'*(length-le)+temp
+    else:
+        integer+=2**(length-1)
+        temp=bin(integer).replace('0b','')
+        le=len(temp)
+        binary='1'+'0'*(length-1-le)+temp        
+    return binary
+
+
 global Reg,Mem,ControlSignals
 #register File
 Reg=[0 for j in range(32)]
