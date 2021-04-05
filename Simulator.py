@@ -26,10 +26,14 @@ Reg=[0 for j in range(32)]
 Mem=[0]*4000
 
 
-def readFile(K):
+def readFile(PC):
     #should return a line every time it is caled 
-    return K.readline()
-
+    contents = Mem[PC:PC+16]
+    return contents
+def saveFile(PC,ALUout):
+    for i, val in enumerate(ALUout):
+        Mem[PC +i] = val
+    
 def fetch(inst):
     Reg[0],temp=[int(x) for x in inst.split()]
     return temp
@@ -172,8 +176,13 @@ def execute(arg1,arg2,ALU_control):
     if ALU_control==12:
         return bin(int(arg1)+int(arg2)).replace('0b','')
 
-def memoryAcess():
-    pass
+def memoryAcess(PC,ALUout,opcode):
+    if(str(opcode) == "0000011"):
+        return readFile(PC)
+    elif(str(opcode) == "0100011"):
+        saveFile(ALUout,PC)
+    else:
+       return -1 
 
 def writeBack():
     pass
