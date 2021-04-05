@@ -37,9 +37,89 @@ def fetch(inst):
     Reg[0],temp=[int(x) for x in inst.split()]
     return temp
 
-def decode():
-    #should update the CONTROL_SIGNALS
-    pass
+def decode(s):
+    opcode=s[-7:-1]
+    rd=s[-12:-8]
+    func3=s[-15:-13]
+    rs1=s[-20:-16]
+    rs2=s[-25:-21]
+    func7=s[-32:-26]
+    if(opcode=="0110011"):
+        if(opcode=="0110011"):
+            if(func3=="000" && func7=="0000000"):
+                operation="add"
+            elif(func3=="000" && func7=="0100000"):
+                operation="sub"
+            elif(func3=="001"):
+                operation="sll"
+            elif(func3=="010"):
+                operation="slt"
+            elif(func3=="011"):
+                operation="sltu"
+            elif(func3=="100"):
+                operation="xor"
+            elif(func3=="101" && func7=="0000000"):
+                operation="slr"
+            elif(func3=="101" && func7=="0100000"):
+                operation="sra"
+            elif(func3=="110"):
+                operation="or"
+            elif(func3=="111"):
+                operation="and"
+            elif(func3=="000" && func7=="0000001"):
+                operation="mul"
+            elif(func3=="100" && func7=="0000001"):
+                operation="div"
+            elif(func3=="110" && func7=="0000001"):
+                operation="rem"
+    elif(opcode=="0010011"):
+        imm=func7+rs2
+        if(func3=="000"):
+            operation="addi"
+        elif(func3=="110"):
+            operation="ori"
+        elif(func3=="111"):
+            operation="andi"
+    elif(opcode=="0000011"):
+        imm=func7+rs2
+        if(func3=="000"):
+            operation="lb"
+        elif(func3=="001"):
+            operation="lh"
+        elif(func3=="010"):
+            operation="lw"
+    elif(opcode=="1100111"):
+        imm=func7+rs2
+        if(func3=="000"):
+            operation="jalr"
+    elif(opcode=="0100011"):
+        imm=func7+rd
+        if(func3=="000"):
+            operation="sb"
+        elif(func3=="001"):
+            operation="sh"
+        elif(operation=="010"):
+            operation="sw"
+    elif(opcode=="1100011"):
+        imm=func7+rd
+        if(func3=="000"):
+            operation="beq"
+        elif(func3=="001"):
+            operation="bne"
+        elif(func3=="101"):
+            operation="bge"
+        elif(func3=="100"):
+            operation="blt"
+    elif(opcode=="0010111"):
+        imm=func7+rs2+rs1+func3
+        operation="auipc"
+    elif(opcode=="0110111"):
+        imm=func7+rs2+rs1+func3
+        operation="lui"
+    elif(opcode=="1101111"):
+        imm=func7+rs2+rs1+func3
+        operation="jal"
+
 def execute(arg1,arg2,ALU_control):
     '''
     0: signed addition
