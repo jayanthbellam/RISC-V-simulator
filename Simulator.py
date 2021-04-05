@@ -18,17 +18,14 @@ def dectobin(integer,length):
     return binary
 
 
-global Reg,Mem,ControlSignals
+global Reg,Mem,operation,rd,rs1,rs2,imm
 #register File
 Reg=[0 for j in range(32)]
 
 #memory
 Mem=[0]*4000
 
-#Control Signals
-#A dictionary for holding the control signals
-#use keys like MUXB, MUXY,RY,RZ (same as in lectures) for uniformity
-ControlSignals={}
+
 def readFile(K):
     #should return a line every time it is caled 
     return K.readline()
