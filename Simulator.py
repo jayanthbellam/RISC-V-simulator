@@ -184,9 +184,18 @@ def memoryAcess(PC,ALUout,opcode):
     else:
        return -1 
 
-def writeBack():
-    pass
-
+def writeback(data,rm,PC):   #data from memory ,# rm  from excute for ALU instructions ,# rd destination register 
+    if(operation =="add" or operation=="slt" or operation=="and" or operation =="or" or operation=="sll" or operation=="sra" or operation=="mul"):
+        Reg[rd]=rm
+    elif(operation== "srl" or operation=="sub" or operation=="xor" or operation=="div" or operation=="rem" or operation=="addi" or operation=="andi" or operation=="ori"):
+        Reg[rd]=rm
+    elif(operation=="lb" or operation=="ld" or operation=="lh" or operation=="lw"):
+        Reg[rd]=data
+    elif(operation=="jalr" or operation=="jal"):
+        Reg[rd]=PC
+    elif(operation=="lui" or operation=="auipc"):
+        Reg[rd]=rm
+        
 def setToStart():
     #restores the registers to the original state
     pass
