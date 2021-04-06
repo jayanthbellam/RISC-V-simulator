@@ -41,8 +41,6 @@ Reg=['0' for j in range(32)]
 #memory
 Mem=['0'*32]*4000
 
-
-
     
 def fetch():
     global IR,PC
@@ -204,15 +202,63 @@ def execute():
         PC=temp
         ALU_ouput=temp2
 def memoryAcess():
-    global PC,ALU_output,opcode
-    if opcode == "0000011":
-        contents = Mem[PC:PC+16]
-        return contents
-    elif opcode == "0100011":
-        for i,val in enumerate(ALU_output):
-            Mem[PC + i] = val
+    global PC,ALU_output,operation 
+    ALu_output = bintodec(ALU_output)
+    contents = ''
+    if operation == "lw":
+        for i in range(32):
+            contents+= Mem[Alu_output//32][ALu_output%32]
+            ALu_output+= 1
+         Reg[rs1] = contents 
+    elif operation == "lh":
+         for i in range(16):
+            contents+= Mem[Alu_output//32][ALu_output%32]
+            ALu_output+=1
+          Reg[rs1] = contents
+    elif operation  == "lb":
+         for i in range(8):
+            contents+= Mem[Alu_output//32][ALu_output%32]
+            ALu_output+=1
+         Reg[rs1] = contents
+    elif operation  == "sb":
+         val = ALu_output%32
+         if(val < 24 == True):
+             contents = Mem[ALu_output//32]
+              k = contents[:val] + rs2 + contents[val + 8:]
+          else:
+              contents1= Mem[ALu_output//32]
+              contents2 = Mem[ALu_output//32+1]
+              a = 32 - val 
+              b = 2 * val - 32
+              k1 = contents1[:val] + rs2[:a]
+              k2 = rs2[-b:] + contents2[b:]
+    elif operation  == "sh":
+         val = ALu_output%32
+         if(val < 16 == True):
+             contents = Mem[ALu_output//32]
+              k = contents[:val] + rs2 + contents[val + 8:]
+          else:
+              contents1= Mem[ALu_output//32]
+              contents2 = Mem[ALu_output//32+1]
+              a = 32 - val 
+              b = 2 * val - 32
+              k1 = contents1[:val] + rs2[:a]
+              k2 = rs2[-b:] + contents2[b:]
+    elif operation  == "sw":
+          val = ALu_output%32
+          if(val < 16 == True):
+             contents = Mem[ALu_output//32]
+             k = contents[:val] + rs2 + contents[val + 16:]
+          else:
+             contents1= Mem[ALu_output//32]
+             contents2 = Mem[ALu_output//32+1]
+             a = 32 - val 
+             b = 2 * val - 32
+             k1 = contents1[:val] + rs2[:a]
+             k2 = rs2[-b:] + contents2[b:]
+            
     else:
-       return -1 
+        return 
 
 def writeback(data):  #data from memory ,#   from excute for ALU instructions ,# rd destination register 
     rd1=int(rd,base=2)
