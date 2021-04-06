@@ -205,7 +205,8 @@ def execute():
     if operation in ["lui","jal"]:
         ALU_output=imm
     
-def memoryAcess(PC,ALUout,opcode):
+def memoryAcess():
+    global PC,ALU_output,opcode
     if opcode == "0000011":
         return readMemory(PC)
     elif opcode == "0100011":
