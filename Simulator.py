@@ -42,13 +42,7 @@ Reg=['0' for j in range(32)]
 Mem=['0'*32]*4000
 
 
-def readMemory(PC):
-    #should return a line every time it is caled 
-    contents = Mem[PC:PC+16]
-    return contents
-def saveMemory(PC,ALUout):
-    for i, val in enumerate(ALUout):
-        Mem[PC +i] = val
+
     
 def fetch():
     global IR,PC
@@ -204,13 +198,15 @@ def execute():
         PC+=bintodec(imm)
     if operation in ["lui","jal"]:
         ALU_output=imm
-    
+ 
 def memoryAcess():
     global PC,ALU_output,opcode
     if opcode == "0000011":
-        return readMemory(PC)
+        contents = Mem[PC:PC+16]
+        return contents
     elif opcode == "0100011":
-        saveMemory(ALUout,PC)
+        for i,val in enumerate(ALU_output):
+            Mem[PC + i] = val
     else:
        return -1 
 
