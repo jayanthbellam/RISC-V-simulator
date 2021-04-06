@@ -23,7 +23,7 @@ global Reg,Mem
 Reg=['0' for j in range(32)]
 
 #memory
-Mem=[0]*4000
+Mem=['0'*32]*4000
 
 
 def readFile(PC):
@@ -35,17 +35,17 @@ def saveFile(PC,ALUout):
         Mem[PC +i] = val
     
 def fetch(inst):
+    global IR,PC
     Reg[0],temp=[int(x) for x in inst.split()]
     return temp
-
-def decode(s):
-    opcode=s[-7:]
-    global rd,rs1,rs2,operation,imm
-    rd=s[-12:-7]
-    func3=s[-15:-12]
-    rs1=s[-20:-15]
-    rs2=s[-25:-20]
-    func7=s[-32:-25]
+def decode():
+    global rs1,rs2,rd,imm,operation
+    opcode=IR[-7:]
+    rd=IR[-12:-7]
+    func3=IR[-15:-12]
+    rs1=IR[-20:-15]
+    rs2=IR[-25:-20]
+    func7=IR[-32:-25]
     if(opcode=="0110011"):
         if(opcode=="0110011"):
             if(func3=="000" and func7=="0000000"):
@@ -61,7 +61,7 @@ def decode(s):
             elif(func3=="100"):
                 operation="xor"
             elif(func3=="101" and func7=="0000000"):
-                operation="srl"
+                operation="slr"
             elif(func3=="101" and func7=="0100000"):
                 operation="sra"
             elif(func3=="110"):
@@ -103,7 +103,7 @@ def decode(s):
         elif(operation=="010"):
             operation="sw"
     elif(opcode=="1100011"):
-        imm=func7+rd
+        imm=func7[0]+rd[-1]+func7[1:]+rd[0:-1]+"0"
         if(func3=="000"):
             operation="beq"
         elif(func3=="001"):
@@ -113,16 +113,17 @@ def decode(s):
         elif(func3=="100"):
             operation="blt"
     elif(opcode=="0010111"):
-        imm=func7+rs2+rs1+func3
+        imm=func7+rs2+rs1+func3+"000000000000"
         operation="auipc"
     elif(opcode=="0110111"):
-        imm=func7+rs2+rs1+func3
+        imm=func7+rs2+rs1+func3+"000000000000"
         operation="lui"
     elif(opcode=="1101111"):
-        imm=func7+rs2+rs1+func3
+        imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
 
 def execute():
+    global PC
     arg1=int(rs1,base=2)
     arg2=int(rs2,base=2)
     if operation=="add":
@@ -167,7 +168,25 @@ def execute():
     if operation=="addi":
         temp=bintodec(Reg[arg1])+bintodec(imm)
         return dectobin(temp,32)
-        
+    if operation=="ori":
+        temp=bintodec(Reg[arg1])|bintodec(imm)
+        return dectobin(temp,32)
+    if operation=="andi":
+        temp=bintodec(Reg[arg1])&bintodec(imm)
+        return dectobin(temp,32)
+    if operation in ["lb","lw","lh","sb","sh","sw"]:
+        temp=bintodec(Reg[rs1])+bintodec(imm)
+        return dectobin(temp,32)
+    if operation=="jalr":
+        temp=bintodec(Reg[rs1])+bintodec(imm)
+        temp2=PC+4
+        PC=temp
+        return temp2
+    if operation in ["beg","bne","bge","blt","auipc"]:
+        PC+=bintodec(imm)
+    if operation in ["lui","jal"]:
+        return imm
+    
 def memoryAcess(PC,ALUout,opcode):
     if(str(opcode) == "0000011"):
         return readFile(PC)
