@@ -201,7 +201,3 @@ def run_RISCVsim():
     #put it all together
     pass
 
-Reg[6]='0'*28 + '1100'
-Reg[7]='0'*28 + '1010'
-decode('00000000000100110000001010010011')
-writeback(execute(),0,0)
