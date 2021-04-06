@@ -196,9 +196,13 @@ def execute():
         ALU_output=temp2
     if operation in ["beg","bne","bge","blt","auipc"]:
         PC+=bintodec(imm)
-    if operation in ["lui","jal"]:
+    if operation=="lui":
         ALU_output=imm
- 
+    if operation=="jal":
+        temp=bintodec(imm)
+        temp2=PC
+        PC=temp
+        ALU_ouput=temp2
 def memoryAcess():
     global PC,ALU_output,opcode
     if opcode == "0000011":
