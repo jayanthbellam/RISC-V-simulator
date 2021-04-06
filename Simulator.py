@@ -225,6 +225,7 @@ def memoryAcess():
          if(val < 24 == True):
              contents = Mem[ALu_output//32]
               k = contents[:val] + rs2 + contents[val + 8:]
+              Mem[ALu_output//32] = k
           else:
               contents1= Mem[ALu_output//32]
               contents2 = Mem[ALu_output//32+1]
@@ -232,11 +233,14 @@ def memoryAcess():
               b = 2 * val - 32
               k1 = contents1[:val] + rs2[:a]
               k2 = rs2[-b:] + contents2[b:]
+              Mem[ALu_output//32] = k1
+              Mem[ALu_output//32+1] = k2
     elif operation  == "sh":
          val = ALu_output%32
          if(val < 16 == True):
-             contents = Mem[ALu_output//32]
+              contents = Mem[ALu_output//32]
               k = contents[:val] + rs2 + contents[val + 8:]
+              Mem[ALu_output//32] = k
           else:
               contents1= Mem[ALu_output//32]
               contents2 = Mem[ALu_output//32+1]
@@ -244,11 +248,14 @@ def memoryAcess():
               b = 2 * val - 32
               k1 = contents1[:val] + rs2[:a]
               k2 = rs2[-b:] + contents2[b:]
+              Mem[ALu_output//32] = k1
+              Mem[ALu_output//32+1] = k2
     elif operation  == "sw":
           val = ALu_output%32
           if(val < 16 == True):
              contents = Mem[ALu_output//32]
              k = contents[:val] + rs2 + contents[val + 16:]
+             Mem[ALu_output//32] = k
           else:
              contents1= Mem[ALu_output//32]
              contents2 = Mem[ALu_output//32+1]
@@ -256,6 +263,8 @@ def memoryAcess():
              b = 2 * val - 32
              k1 = contents1[:val] + rs2[:a]
              k2 = rs2[-b:] + contents2[b:]
+             Mem[ALu_output//32] = k1
+             Mem[ALu_output//32+1] = k2
             
     else:
         return 
