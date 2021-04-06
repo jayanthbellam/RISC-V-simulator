@@ -18,9 +18,9 @@ def dectobin(integer,length):
     return binary
 
 
-global Reg,Mem,operation,rd,rs1,rs2,imm
+global Reg,Mem
 #register File
-Reg=[0 for j in range(32)]
+Reg=['0' for j in range(32)]
 
 #memory
 Mem=[0]*4000
@@ -39,17 +39,18 @@ def fetch(inst):
     return temp
 
 def decode(s):
-    opcode=s[-7:-1]
-    rd=s[-12:-8]
-    func3=s[-15:-13]
-    rs1=s[-20:-16]
-    rs2=s[-25:-21]
-    func7=s[-32:-26]
+    opcode=s[-7:]
+    global rd,rs1,rs2,operation,imm
+    rd=s[-12:-7]
+    func3=s[-15:-12]
+    rs1=s[-20:-15]
+    rs2=s[-25:-20]
+    func7=s[-32:-25]
     if(opcode=="0110011"):
         if(opcode=="0110011"):
-            if(func3=="000" && func7=="0000000"):
+            if(func3=="000" and func7=="0000000"):
                 operation="add"
-            elif(func3=="000" && func7=="0100000"):
+            elif(func3=="000" and func7=="0100000"):
                 operation="sub"
             elif(func3=="001"):
                 operation="sll"
@@ -59,19 +60,19 @@ def decode(s):
                 operation="sltu"
             elif(func3=="100"):
                 operation="xor"
-            elif(func3=="101" && func7=="0000000"):
-                operation="slr"
-            elif(func3=="101" && func7=="0100000"):
+            elif(func3=="101" and func7=="0000000"):
+                operation="srl"
+            elif(func3=="101" and func7=="0100000"):
                 operation="sra"
             elif(func3=="110"):
                 operation="or"
             elif(func3=="111"):
                 operation="and"
-            elif(func3=="000" && func7=="0000001"):
+            elif(func3=="000" and func7=="0000001"):
                 operation="mul"
-            elif(func3=="100" && func7=="0000001"):
+            elif(func3=="100" and func7=="0000001"):
                 operation="div"
-            elif(func3=="110" && func7=="0000001"):
+            elif(func3=="110" and func7=="0000001"):
                 operation="rem"
     elif(opcode=="0010011"):
         imm=func7+rs2
@@ -121,61 +122,52 @@ def decode(s):
         imm=func7+rs2+rs1+func3
         operation="jal"
 
-def execute(arg1,arg2,ALU_control):
-    '''
-    0: signed addition
-    1: bitwise AND
-    2: bitwise OR
-    3: SLL
-    4: SLT
-    5: SRA
-    6: SRl
-    7: SUB
-    8: XOR
-    9: MUL
-    10: DIV
-    11: REM
-    12: unsigned addition
-    '''
-    if ALU_control==0:
-        return arg1+arg2
-    if ALU_control==1:
-        return arg1&arg2
-    if ALU_control==2:
-        return arg1|arg2
-    if ALU_control==3:
-        temp=bin(arg1).replace('0b','')
-        temp=temp[arg2:]
-        temp=int(temp,base=2)
+def execute():
+    arg1=int(rs1,base=2)
+    arg2=int(rs2,base=2)
+    if operation=="add":
+        return dectobin(bintodec(Reg[arg1])+bintodec(Reg[arg2]),32)
+    if operation=="sub":
+        return dectobin(bintodec(Reg[arg1])-bintodec(Reg[arg2]),32)    
+    if operation=="sll":
+        shif=bintodec(Reg[arg2])
+        temp=Reg[arg1][shif:]+'0'*shif
         return temp
-    if ALU_control==4:
-        return 1 if arg1<arg2 else 0
-        pass
-    if ALU_control==5:
-        temp=bin(arg1).replace('0b', '')
-        temp=temp[:-arg2]
-        temp='1'*arg2 +temp
-        return int(temp)
-    if ALU_control==6:
-        temp=bin(arg1).replace('0b', '')
-        temp=temp[:-arg2]
-        temp='0'*arg2 +temp
-        return int(temp)
-    if ALU_control==7:
-        return arg1-arg2
-    if ALU_control==8:
-        return arg1^arg2
-    if ALU_control==9:
-        return arg1*arg2
-    if ALU_control==10:
-       if arg2==0: #convetion
-           return bintodec('1'*32)
-       return arg1//arg2
-    if ALU_control==11:
-        return arg1%arg2
-    if ALU_control==12:
-        return bin(int(arg1)+int(arg2)).replace('0b','')
-
+    if operation=="slt":
+        r1=bintodec(Reg[arg1])
+        r2=bintodec(Reg[arg2])
+        return 1 if r1<r2 else 0
+    if operation=="sltu":
+        return 1 if int(r1,base=2)<int(r2,base=2) else 0
+    if operation=="xor":
+        return dectobin(bintodec(Reg[arg1])^bintodec(Reg[arg2]),32)
+    if operation=="srl":
+        shif=bintodec(Reg[arg2])
+        temp='0'*shif+Reg[arg1][:-shif]
+        return temp
+    if operation=="sra":
+        shif=bintodec(Reg[arg2])
+        temp='1'*shif+Reg[arg1][:-shif]
+        return temp
+    if operation=="or":
+        temp=bintodec(Reg[arg1])|bintodec(Reg[arg2])
+        return dectobin(temp, 32)
+    if operation=="and":
+        temp=bintodec(Reg[arg1])&bintodec(Reg[arg2])
+        return dectobin(temp,32)
+    if operation=="mul":
+        temp=bintodec(Reg[arg1]) * bintodec(Reg[arg2])
+        return dectobin(temp,32)
+    if operation=="div":
+        temp=bintodec(Reg[arg1]) // bintodec(Reg[arg2])
+        return dectobin(temp,32)        
+    if operation=="rem":
+        temp=bintodec(Reg[arg1]) % bintodec(Reg[arg2])
+        return dectobin(temp,32)
+    if operation=="addi":
+        temp=bintodec(Reg[arg1])+bintodec(imm)
+        return dectobin(temp,32)
+        
 def memoryAcess(PC,ALUout,opcode):
     if(str(opcode) == "0000011"):
         return readFile(PC)
@@ -207,3 +199,8 @@ def storeState():
 def run_RISCVsim():
     #put it all together
     pass
+
+Reg[6]='0'*28 + '1100'
+Reg[7]='0'*28 + '1010'
+decode('00000000000100110000001010010011')
+writeback(execute(),0,0)
