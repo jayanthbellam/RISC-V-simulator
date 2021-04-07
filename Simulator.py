@@ -36,7 +36,7 @@ def dectobin(integer,length):
 
 PC=0
 #register File
-Reg=['0' for j in range(32)]
+Reg=['0'*32 for j in range(32)]
 
 #memory
 Mem=['0'*32]*4000
