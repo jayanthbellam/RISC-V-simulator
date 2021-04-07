@@ -205,7 +205,7 @@ def execute():
         print("the program is executed successfully", "the output after ALU operations done:" ALU_output )
 def memoryAcess():
     global PC,ALU_output,operation,MDR
-    ALu_output = bintodec(ALU_output)
+    ALu_output = int(ALU_output,base=2)
     val = ALu_output%32
     MDR = ''
     if operation == "lw":
