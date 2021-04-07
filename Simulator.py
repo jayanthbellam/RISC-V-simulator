@@ -1,4 +1,3 @@
-global Reg,Mem,PC,IR,rs1,rs2,rd,imm,operation
 
 def readFile(file):
     File=open(file,'r')
@@ -130,7 +129,7 @@ def decode():
     elif(opcode=="1101111"):
         imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
-        print("the machine code is decoded successfully", "instruction is=" operation)
+        print("the machine code is decoded successfully instruction is="+operation)
 
 def execute():
     global PC,ALU_output,operation
@@ -202,7 +201,7 @@ def execute():
         temp2=PC
         PC=temp
         ALU_ouput=temp2
-        print("the program is executed successfully", "the output after ALU operations done:" ALU_output )
+        print("the program is executed successfully the output after ALU operations done:"+ALU_output )
 def memoryAcess():
     global PC,ALU_output,operation,MDR
     ALu_output = int(ALU_output,base=2)
@@ -222,9 +221,9 @@ def memoryAcess():
     elif operation  == "sb":
          if val <=24:
              contents = Mem[ALu_output//32]
-              k = contents[:val] + rs2 + contents[val + 8:]
-              Mem[ALu_output//32] = k
-          else:
+             k = contents[:val] + rs2 + contents[val + 8:]
+             Mem[ALu_output//32] = k
+         else:
               contents1= Mem[ALu_output//32]
               contents2 = Mem[ALu_output//32+1]
               a = 32 - val 
@@ -238,7 +237,7 @@ def memoryAcess():
               contents = Mem[ALu_output//32]
               k = contents[:val] + rs2 + contents[val + 8:]
               Mem[ALu_output//32] = k
-          else:
+         else:
               contents1= Mem[ALu_output//32]
               contents2 = Mem[ALu_output//32+1]
               a = 32 - val 
@@ -280,6 +279,7 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
         print("Memory write successful")
 
 def setToStart():
+    global Reg,Mem,PC,IR,rs1,rs2,rd,imm,operation
     Reg=['0'*32]*32
     Mem=['0'*32]*4000
     Reg[2]='01111111111111111111111111110000'
@@ -290,18 +290,21 @@ def setToStart():
     rs2=['0'*5]
     rd=['0'*5]
     imm=['0'*12]
+    operation=''
+
 def storeState():
+    global Reg,Mem
     f=open("store.txt","w+")
-    f.write("Registers: ")
+    f.write("Registers\n")
     for i in range(32):
-        f.write(Reg[i])         #Registers: 0000..... 0000....1 ......
-        f.write(" ")            #Memory:00.000 0012.. 
-    f.write("\n") 
+        f.write("x"+str(i)+":"+Reg[i])         #Registers: 0000..... 0000....1 ......
+        f.write("\n")            #Memory:00.000 0012.. 
+    f.write("\n\n") 
     f.write("Memory: ")
     for j in range(4000):
         f.write(Mem[j])
         f.write(" ")
-    f.write("\n")    
+        f.write("\n")    
     f.close()    
        
 def run_RISCVsim():
@@ -310,3 +313,4 @@ def run_RISCVsim():
     execute()
     memoryAcess()
     writeback()
+
