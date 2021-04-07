@@ -278,7 +278,7 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
     elif(operation=="lb" or operation=="ld" or operation=="lh" or operation=="lw"):
         Reg[rd1]=MDR
     elif(operation=="jalr" or operation=="jal"):
-        Reg[rd1]=PC
+        Reg[rd1]=ALU_output  
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
     print("Memory write successful")
