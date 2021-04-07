@@ -7,7 +7,7 @@ def readFile(file):
         inst=File.readline()
         if inst:
             _,inst=inst.split()
-            inst=bin(int(inst,base=16))
+            inst=bin(int(inst,base=16)).replace('0b','')
             MachineCode.append(inst)
         else:
             break
@@ -45,7 +45,10 @@ def fetch():
     global IR,PC
     IR=MachineCode[PC//4]
     PC+=4
+    print("The instruction is"+str(IR))
+    print("PC incremented from"+str(PC-4)+"to"+str(PC))
 def decode():
+    print("performing decode()")
     global rs1,rs2,rd,imm,operation
     operation=''
     opcode=IR[-7:]
@@ -55,33 +58,33 @@ def decode():
     rs2=IR[-25:-20]
     func7=IR[-32:-25]
     if(opcode=="0110011"):
-        if(opcode=="0110011"):
-            if(func3=="000" and func7=="0000000"):
-                operation="add"
-            elif(func3=="000" and func7=="0100000"):
-                operation="sub"
-            elif(func3=="001"):
-                operation="sll"
-            elif(func3=="010"):
-                operation="slt"
-            elif(func3=="011"):
-                operation="sltu"
-            elif(func3=="100"):
-                operation="xor"
-            elif(func3=="101" and func7=="0000000"):
-                operation="slr"
-            elif(func3=="101" and func7=="0100000"):
-                operation="sra"
-            elif(func3=="110"):
-                operation="or"
-            elif(func3=="111"):
-                operation="and"
-            elif(func3=="000" and func7=="0000001"):
-                operation="mul"
-            elif(func3=="100" and func7=="0000001"):
-                operation="div"
-            elif(func3=="110" and func7=="0000001"):
-                operation="rem"
+        if(func3=="000" and func7=="0000000"):
+            operation="add"
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+        elif(func3=="000" and func7=="0100000"):
+            operation="sub"
+        elif(func3=="001"):
+            operation="sll"
+        elif(func3=="010"):
+            operation="slt"
+        elif(func3=="011"):
+            operation="sltu"
+        elif(func3=="100"):
+            operation="xor"
+        elif(func3=="101" and func7=="0000000"):
+            operation="slr"
+        elif(func3=="101" and func7=="0100000"):
+            operation="sra"
+        elif(func3=="110"):
+            operation="or"
+        elif(func3=="111"):
+            operation="and"
+        elif(func3=="000" and func7=="0000001"):
+            operation="mul"
+        elif(func3=="100" and func7=="0000001"):
+            operation="div"
+        elif(func3=="110" and func7=="0000001"):
+            operation="rem"
     elif(opcode=="0010011"):
         imm=func7+rs2
         if(func3=="000"):
@@ -129,7 +132,6 @@ def decode():
     elif(opcode=="1101111"):
         imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
-        print("the machine code is decoded successfully instruction is="+operation)
 
 def execute():
     global PC,ALU_output,operation
@@ -204,8 +206,11 @@ def execute():
         print("the program is executed successfully the output after ALU operations done:"+ALU_output )
 def memoryAcess():
     global PC,ALU_output,operation,MDR
-    ALu_output = int(ALU_output,base=2)
-    val = ALu_output%32
+    if ALU_output:
+        ALu_output = int(ALU_output,base=2)
+        val = ALu_output%32
+    else:
+        return
     MDR = ''
     if operation == "lw":
         for i in range(32):
@@ -276,10 +281,10 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
         Reg[rd1]=PC
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
-        print("Memory write successful")
+    print("Memory write successful")
 
 def setToStart():
-    global Reg,Mem,PC,IR,rs1,rs2,rd,imm,operation
+    global Reg,Mem,PC,IR,rs1,rs2,rd,imm,operation,MDR,ALU_output
     Reg=['0'*32]*32
     Mem=['0'*32]*4000
     Reg[2]='01111111111111111111111111110000'
@@ -291,6 +296,7 @@ def setToStart():
     rd=['0'*5]
     imm=['0'*12]
     operation=''
+    MDR=''
 
 def storeState():
     global Reg,Mem
@@ -313,4 +319,3 @@ def run_RISCVsim():
     execute()
     memoryAcess()
     writeback()
-
