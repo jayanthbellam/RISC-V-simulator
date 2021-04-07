@@ -278,15 +278,32 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
         print("Memory write successful")
-        
+
 def setToStart():
-    #restores the registers to the original state
-    pass
-
+    Reg=['0'*32]*32
+    Mem=['0'*32]*4000
+    Mem[2]='01111111111111111111111111110000'
+    Mem[3]='00010000000000000000000000000000'
+    PC='0'
+    IR=['0'*32]
+    rs1=['0'*5]
+    rs2=['0'*5]
+    rd=['0'*5]
+    imm=['0'*12]
 def storeState():
-    #creates a file which stores the current state of Registers and Memory
-    pass
-
+    f=open("store.txt","w+")
+    f.write("Registers: ")
+    for i in range(32):
+        f.write(Reg[i])         #Registers: 0000..... 0000....1 ......
+        f.write(" ")            #Memory:00.000 0012.. 
+    f.write("\n") 
+    f.write("Memory: ")
+    for j in range(4000):
+        f.write(Mem[j])
+        f.write(" ")
+    f.write("\n")    
+    f.close()    
+       
 def run_RISCVsim():
     fetch()
     decode()
