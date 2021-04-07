@@ -272,14 +272,17 @@ def memoryAcess():
         for i in range(32):
             MDR+= Mem[Alu_output//32][ALu_output%32]
             Alu_output+1
+            print("we retrieved the word of value:"+MDR+"at memory address:"+ALU_output)
     elif operation == "lh":
          for i in range(16):
             MDR+= Mem[Alu_output//32][ALu_output%32]
             ALu_output+=1
+                        print("we retrieved the half word of value:"+MDR+"at memory address:"+ALU_output)
     elif operation  == "lb":
          for i in range(8):
             MDR+= Mem[Alu_output//32][ALu_output%32]
             ALu_output+=1
+                        print("we retrieved the byte of value:"+MDR+"at memory address:"+ALU_output)
     elif operation  == "sb":
          if val <=24:
              contents = Mem[ALu_output//32]
@@ -294,6 +297,7 @@ def memoryAcess():
               k2 = rs2[-b:] + contents2[b:]
               Mem[ALu_output//32] = k1
               Mem[ALu_output//32+1] = k2
+                        print("we stored the byte at memory address:"+ALU_output)
     elif operation  == "sh":
          if val <=16:
               contents = Mem[ALu_output//32]
@@ -308,6 +312,7 @@ def memoryAcess():
               k2 = rs2[-b:] + contents2[b:]
               Mem[ALu_output//32] = k1
               Mem[ALu_output//32+1] = k2
+                        print("we stored the half word at memory address:"+ALU_output)
     elif operation  == "sw":
           if val <=0:
              contents = Mem[ALu_output//32]
@@ -322,6 +327,7 @@ def memoryAcess():
              k2 = rs2[-b:] + contents2[b:]
              Mem[ALu_output//32] = k1
              Mem[ALu_output//32+1] = k2
+                        print("we stored the word at memory address:"+ALU_output)
             
     else:
         return 
@@ -330,14 +336,19 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
     rd1=int(rd,base=2)
     if(operation =="add" or operation=="slt" or operation=="and" or operation =="or" or operation=="sll" or operation=="sra" or operation=="mul"):
         Reg[rd1]=ALU_output
+        print("the answer is updated in the destination register")
     elif(operation== "srl" or operation=="sub" or operation=="xor" or operation=="div" or operation=="rem" or operation=="addi" or operation=="andi" or operation=="ori"):
         Reg[rd1]=ALU_output
+        print("the answer is updated in the destination register")
     elif(operation=="lb" or operation=="ld" or operation=="lh" or operation=="lw"):
         Reg[rd1]=MDR
+        print("the answer is updated in the destination register")
     elif(operation=="jalr" or operation=="jal"):
-        Reg[rd1]=ALU_output  
+        Reg[rd1]=ALU_output
+        print("the answer is updated in the destination register")
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
+        print("the answer is updated in the destination register")
     print("Memory write successful")
 
 def setToStart():
