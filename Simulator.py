@@ -63,75 +63,104 @@ def decode():
             print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="000" and func7=="0100000"):
             operation="sub"
+           print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="001"):
             operation="sll"
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="010"):
             operation="slt"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="011"):
             operation="sltu"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="100"):
             operation="xor"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="101" and func7=="0000000"):
-            operation="slr"
+            operation="srl"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="101" and func7=="0100000"):
             operation="sra"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="110"):
             operation="or"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="111"):
             operation="and"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="000" and func7=="0000001"):
             operation="mul"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="100" and func7=="0000001"):
             operation="div"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
         elif(func3=="110" and func7=="0000001"):
             operation="rem"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
     elif(opcode=="0010011"):
         imm=func7+rs2
         if(func3=="000"):
             operation="addi"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
         elif(func3=="110"):
             operation="ori"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
         elif(func3=="111"):
             operation="andi"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
     elif(opcode=="0000011"):
         imm=func7+rs2
         if(func3=="000"):
             operation="lb"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
         elif(func3=="001"):
             operation="lh"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
         elif(func3=="010"):
             operation="lw"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
     elif(opcode=="1100111"):
         imm=func7+rs2
         if(func3=="000"):
             operation="jalr"
+                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
     elif(opcode=="0100011"):
         imm=func7+rd
         if(func3=="000"):
             operation="sb"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
         elif(func3=="001"):
             operation="sh"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
         elif(operation=="010"):
             operation="sw"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
     elif(opcode=="1100011"):
         imm=func7[0]+rd[-1]+func7[1:]+rd[0:-1]+"0"
         if(func3=="000"):
             operation="beq"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
         elif(func3=="001"):
             operation="bne"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
         elif(func3=="101"):
             operation="bge"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
         elif(func3=="100"):
             operation="blt"
+                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
     elif(opcode=="0010111"):
         imm=func7+rs2+rs1+func3+"000000000000"
         operation="auipc"
+                    print("The operation is "+operation+"Rd: "+rd)
     elif(opcode=="0110111"):
         imm=func7+rs2+rs1+func3+"000000000000"
         operation="lui"
+                    print("The operation is "+operation+"Rd: "+rd)
     elif(opcode=="1101111"):
         imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
+                    print("The operation is "+operation+"Rd: "+rd)
 
 def execute():
     global PC,ALU_output,operation
