@@ -130,6 +130,7 @@ def decode():
     elif(opcode=="1101111"):
         imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
+        print("the machine code is decoded successfully", "instruction is=" operation)
 
 def execute():
     global PC,ALU_output,operation
@@ -201,6 +202,7 @@ def execute():
         temp2=PC
         PC=temp
         ALU_ouput=temp2
+        print("the program is executed successfully", "the output after ALU operations done:" ALU_output )
 def memoryAcess():
     global PC,ALU_output,operation 
     ALu_output = bintodec(ALU_output)
@@ -281,6 +283,7 @@ def writeback(data):  #data from memory ,#   from excute for ALU instructions ,#
         Reg[rd1]=PC
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
+        print("Memory write successful")
         
 def setToStart():
     #restores the registers to the original state
