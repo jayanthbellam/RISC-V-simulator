@@ -169,70 +169,91 @@ def execute():
     arg2=int(rs2,base=2)
     if operation=="add":
         ALU_output=dectobin(bintodec(Reg[arg1])+bintodec(Reg[arg2]),32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="sub":
-        ALU_output=dectobin(bintodec(Reg[arg1])-bintodec(Reg[arg2]),32)    
+        ALU_output=dectobin(bintodec(Reg[arg1])-bintodec(Reg[arg2]),32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="sll":
         shif=bintodec(Reg[arg2])
         temp=Reg[arg1][shif:]+'0'*shif
         ALU_output=temp
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="slt":
         r1=bintodec(Reg[arg1])
         r2=bintodec(Reg[arg2])
         ALU_output=1 if r1<r2 else 0
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="sltu":
         ALU_output=1 if int(r1,base=2)<int(r2,base=2) else 0
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="xor":
         ALU_output=dectobin(bintodec(Reg[arg1])^bintodec(Reg[arg2]),32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="srl":
         shif=bintodec(Reg[arg2])
         temp='0'*shif+Reg[arg1][:-shif]
         ALU_output=temp
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="sra":
         shif=bintodec(Reg[arg2])
         temp='1'*shif+Reg[arg1][:-shif]
         ALU_output=temp
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="or":
         temp=bintodec(Reg[arg1])|bintodec(Reg[arg2])
         ALU_output=dectobin(temp, 32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="and":
         temp=bintodec(Reg[arg1])&bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="mul":
         temp=bintodec(Reg[arg1]) * bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="div":
         temp=bintodec(Reg[arg1]) // bintodec(Reg[arg2])
-        ALU_output=dectobin(temp,32)        
+        ALU_output=dectobin(temp,32) 
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="rem":
         temp=bintodec(Reg[arg1]) % bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
     if operation=="addi":
         temp=bintodec(Reg[arg1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
     if operation=="ori":
         temp=bintodec(Reg[arg1])|bintodec(imm)
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
     if operation=="andi":
         temp=bintodec(Reg[arg1])&bintodec(imm)
         ALU_output=dectobin(temp,32)
+        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
     if operation in ["lb","lw","lh","sb","sh","sw"]:
         temp=bintodec(Reg[rs1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
+        
     if operation=="jalr":
         temp=bintodec(Reg[rs1])+bintodec(imm)
         temp2=PC
         PC=temp
         ALU_output=temp2
+        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
     if operation in ["beg","bne","bge","blt","auipc"]:
         PC+=bintodec(imm)
+        print(operation+"of"+arg1+"and"+arg2+"is done")
     if operation=="lui":
         ALU_output=imm
+        print(operation+"is done")
     if operation=="jal":
         temp=bintodec(imm)
         temp2=PC
         PC=temp
         ALU_ouput=temp2
-        print("the program is executed successfully the output after ALU operations done:"+ALU_output )
+        print(operation+"is done")
+        print("the program is executed successfully" )
 def memoryAcess():
     global PC,ALU_output,operation,MDR
     if ALU_output:
