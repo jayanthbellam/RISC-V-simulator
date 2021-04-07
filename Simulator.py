@@ -204,8 +204,10 @@ def execute():
         ALU_ouput=temp2
         print("the program is executed successfully", "the output after ALU operations done:" ALU_output )
 def memoryAcess():
+    def memoryAcess():
     global PC,ALU_output,operation 
     ALu_output = bintodec(ALU_output)
+    val = ALu_output%32
     contents = ''
     if operation == "lw":
         for i in range(32):
@@ -223,8 +225,7 @@ def memoryAcess():
             ALu_output+=1
          Reg[rs1] = contents
     elif operation  == "sb":
-         val = ALu_output%32
-         if(val < 24 == True):
+         if val <=24:
              contents = Mem[ALu_output//32]
               k = contents[:val] + rs2 + contents[val + 8:]
               Mem[ALu_output//32] = k
@@ -238,8 +239,7 @@ def memoryAcess():
               Mem[ALu_output//32] = k1
               Mem[ALu_output//32+1] = k2
     elif operation  == "sh":
-         val = ALu_output%32
-         if(val < 16 == True):
+         if val <=16:
               contents = Mem[ALu_output//32]
               k = contents[:val] + rs2 + contents[val + 8:]
               Mem[ALu_output//32] = k
@@ -253,8 +253,7 @@ def memoryAcess():
               Mem[ALu_output//32] = k1
               Mem[ALu_output//32+1] = k2
     elif operation  == "sw":
-          val = ALu_output%32
-          if(val < 16 == True):
+          if val <=0:
              contents = Mem[ALu_output//32]
              k = contents[:val] + rs2 + contents[val + 16:]
              Mem[ALu_output//32] = k
