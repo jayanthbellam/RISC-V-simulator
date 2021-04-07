@@ -271,6 +271,7 @@ def memoryAcess():
     if operation == "lw":
         for i in range(32):
             MDR+= Mem[Alu_output//32][ALu_output%32]
+            Alu_output+1
     elif operation == "lh":
          for i in range(16):
             MDR+= Mem[Alu_output//32][ALu_output%32]
