@@ -8,6 +8,7 @@ def readFile(file):
         if inst:
             _,inst=inst.split()
             inst=bin(int(inst,base=16)).replace('0b','')
+            inst='0'*(32-len(inst))+inst
             MachineCode.append(inst)
         else:
             break
@@ -45,222 +46,227 @@ def fetch():
     global IR,PC
     IR=MachineCode[PC//4]
     PC+=4
-    print("The instruction is"+str(IR))
-    print("PC incremented from"+str(PC-4)+"to"+str(PC))
+    print("The instruction is "+str(IR))
+    print("PC incremented from "+str(PC-4)+" to "+str(PC))
 def decode():
-    print("performing decode()")
-    global rs1,rs2,rd,imm,operation
+    global operation,rs1,rs2,rd,imm
     operation=''
     opcode=IR[-7:]
     rd=IR[-12:-7]
     func3=IR[-15:-12]
     rs1=IR[-20:-15]
     rs2=IR[-25:-20]
-    func7=IR[-32:-25]
+    func7=IR[:7]
     if(opcode=="0110011"):
         if(func3=="000" and func7=="0000000"):
             operation="add"
-            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="000" and func7=="0100000"):
             operation="sub"
-           print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="001"):
             operation="sll"
-            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="010"):
             operation="slt"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="011"):
             operation="sltu"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="100"):
             operation="xor"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="101" and func7=="0000000"):
             operation="srl"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="101" and func7=="0100000"):
             operation="sra"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="110"):
             operation="or"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="111"):
             operation="and"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="000" and func7=="0000001"):
             operation="mul"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="100" and func7=="0000001"):
             operation="div"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
         elif(func3=="110" and func7=="0000001"):
             operation="rem"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" Rd: "+rd)
     elif(opcode=="0010011"):
         imm=func7+rs2
         if(func3=="000"):
             operation="addi"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
         elif(func3=="110"):
             operation="ori"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
         elif(func3=="111"):
             operation="andi"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="0000011"):
         imm=func7+rs2
         if(func3=="000"):
             operation="lb"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
         elif(func3=="001"):
             operation="lh"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
         elif(func3=="010"):
             operation="lw"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
+        elif(func3=="011"):
+            operation="ld"
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="1100111"):
         imm=func7+rs2
         if(func3=="000"):
             operation="jalr"
-                        print("The operation is "+operation+". Rs1: "+rs1+"Rd: "+rd)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="0100011"):
         imm=func7+rd
         if(func3=="000"):
             operation="sb"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
         elif(func3=="001"):
             operation="sh"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
-        elif(operation=="010"):
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
+        elif(func3=="010"):
             operation="sw"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
+        elif(func3=="011"):
+            operation="sd"
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
     elif(opcode=="1100011"):
         imm=func7[0]+rd[-1]+func7[1:]+rd[0:-1]+"0"
         if(func3=="000"):
             operation="beq"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
         elif(func3=="001"):
             operation="bne"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
         elif(func3=="101"):
             operation="bge"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
         elif(func3=="100"):
             operation="blt"
-                        print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2)
+            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
     elif(opcode=="0010111"):
         imm=func7+rs2+rs1+func3+"000000000000"
         operation="auipc"
-                    print("The operation is "+operation+"Rd: "+rd)
+        print("The operation is "+operation+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="0110111"):
         imm=func7+rs2+rs1+func3+"000000000000"
         operation="lui"
-                    print("The operation is "+operation+"Rd: "+rd)
+        print("The operation is "+operation+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="1101111"):
         imm=func7[0]+rs1+func3+rs2[-1]+func7[1:]+rs2[:-1]+"0"
         operation="jal"
-                    print("The operation is "+operation+"Rd: "+rd)
+        print("The operation is "+operation+" Rd: "+rd+" imm: "+imm)
 
 def execute():
-    global PC,ALU_output,operation
+    global PC,ALU_output
     ALU_output=''
     arg1=int(rs1,base=2)
     arg2=int(rs2,base=2)
     if operation=="add":
         ALU_output=dectobin(bintodec(Reg[arg1])+bintodec(Reg[arg2]),32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="sub":
+        print(operation+" of x" +str(arg1)+" and x"+str(arg2)+" is "+ALU_output)
+    elif operation=="sub":
         ALU_output=dectobin(bintodec(Reg[arg1])-bintodec(Reg[arg2]),32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="sll":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="sll":
         shif=bintodec(Reg[arg2])
         temp=Reg[arg1][shif:]+'0'*shif
         ALU_output=temp
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="slt":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="slt":
         r1=bintodec(Reg[arg1])
         r2=bintodec(Reg[arg2])
         ALU_output=1 if r1<r2 else 0
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="sltu":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="sltu":
         ALU_output=1 if int(r1,base=2)<int(r2,base=2) else 0
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="xor":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="xor":
         ALU_output=dectobin(bintodec(Reg[arg1])^bintodec(Reg[arg2]),32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="srl":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="srl":
         shif=bintodec(Reg[arg2])
         temp='0'*shif+Reg[arg1][:-shif]
         ALU_output=temp
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="sra":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="sra":
         shif=bintodec(Reg[arg2])
         temp='1'*shif+Reg[arg1][:-shif]
         ALU_output=temp
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="or":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="or":
         temp=bintodec(Reg[arg1])|bintodec(Reg[arg2])
         ALU_output=dectobin(temp, 32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="and":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="and":
         temp=bintodec(Reg[arg1])&bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="mul":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="mul":
         temp=bintodec(Reg[arg1]) * bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="div":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="div":
         temp=bintodec(Reg[arg1]) // bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32) 
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="rem":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="rem":
         temp=bintodec(Reg[arg1]) % bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+arg2+"is"+ALU_output)
-    if operation=="addi":
+        print(operation+" of x"+arg1+" and x"+arg2+" is "+ALU_output)
+    elif operation=="addi":
         temp=bintodec(Reg[arg1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
-    if operation=="ori":
+        print(operation+" of x"+str(arg1)+" and "+imm+" is "+ALU_output)
+    elif operation=="ori":
         temp=bintodec(Reg[arg1])|bintodec(imm)
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
-    if operation=="andi":
+        print(operation+" of x"+arg1+" and "+imm+" is "+ALU_output)
+    elif operation=="andi":
         temp=bintodec(Reg[arg1])&bintodec(imm)
         ALU_output=dectobin(temp,32)
-        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
-    if operation in ["lb","lw","lh","sb","sh","sw"]:
+        print(operation+" of x"+arg1+" and "+imm+" is "+ALU_output)
+    elif operation in ["lb","lw","lh","sb","sh","sw"]:
         temp=bintodec(Reg[rs1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
-        
-    if operation=="jalr":
+        print("The effective address for "+operation+" is "+ALU_output)
+    elif operation=="jalr":
         temp=bintodec(Reg[rs1])+bintodec(imm)
         temp2=PC
         PC=temp
         ALU_output=temp2
-        print(operation+"of"+arg1+"and"+imm+"is"+ALU_output)
-    if operation in ["beg","bne","bge","blt","auipc"]:
+        print("The effective address for "+operation+" is "+ALU_output)
+        print("The PC has been changed to "+str(temp))
+    elif operation in ["beg","bne","bge","blt","auipc"]:
         PC+=bintodec(imm)
-        print(operation+"of"+arg1+"and"+arg2+"is done")
-    if operation=="lui":
+        print("The effective address for "+operation+" is "+ALU_output)
+    elif operation=="lui":
         ALU_output=imm
         print(operation+"is done")
-    if operation=="jal":
+    elif operation=="jal":
         temp=bintodec(imm)
         temp2=PC
         PC=temp
         ALU_ouput=temp2
         print(operation+"is done")
-        print("the program is executed successfully" )
+
 def memoryAcess():
-    global PC,ALU_output,operation,MDR
-    if ALU_output:
-        ALu_output = int(ALU_output,base=2)
-        val = ALu_output%32
-    else:
+    global MDR
+    if not ALU_output:
         return
+    ALu_output = int(ALU_output,base=2)
+    val = ALu_output%32
     MDR = ''
     if operation == "lw":
         for i in range(32):
@@ -339,7 +345,7 @@ def setToStart():
     Mem=['0'*32]*4000
     Reg[2]='01111111111111111111111111110000'
     Reg[3]='00010000000000000000000000000000'
-    PC='0'
+    PC=0
     IR=['0'*32]
     rs1=['0'*5]
     rs2=['0'*5]
@@ -369,3 +375,9 @@ def run_RISCVsim():
     execute()
     memoryAcess()
     writeback()
+
+readFile('simple_add.mc')
+setToStart()
+instructions=len(MachineCode)
+while PC<=(instructions-1)*4:
+    run_RISCVsim()
