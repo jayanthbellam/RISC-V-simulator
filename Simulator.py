@@ -253,13 +253,13 @@ def execute():
         print("The effective address for "+operation+" is "+ALU_output)
     elif operation=="lui":
         ALU_output=imm
-        print(operation+"is done")
+        print(operation+" is done")
     elif operation=="jal":
         temp=bintodec(imm)
         temp2=PC
         PC=temp
         ALU_ouput=temp2
-        print(operation+"is done")
+        print(operation+" is done")
 
 def memoryAcess():
     global MDR
@@ -361,7 +361,7 @@ def storeState():
     for i in range(32):
         f.write("x"+str(i)+":"+Reg[i])         #Registers: 0000..... 0000....1 ......
         f.write("\n")            #Memory:00.000 0012.. 
-    f.write("\n\n") 
+    f.write("\n\n")
     f.write("Memory: ")
     for j in range(4000):
         f.write(Mem[j])
