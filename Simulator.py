@@ -447,7 +447,6 @@ def run_RISCVsim():
         execute()
         memoryAcess()
         writeback()
-        storeState()
-        input()
         count+=1
+    storeState()
     print("The total number of instructions are ",count)
