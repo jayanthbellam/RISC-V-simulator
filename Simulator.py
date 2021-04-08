@@ -1,3 +1,4 @@
+
 def readFile(file):
     File=open(file,'r')
     global MachineCode
@@ -17,7 +18,7 @@ def readFile(file):
             key,val=inst.split()
             val=bin(int(val,base=16)).replace('0b','')
             val='0'*(32-len(val))+val
-            Mem[int(key,base=16)//32]=val
+            Mem[hex(int(key,base=16))]=val
         else:
             break
     File.close()
@@ -243,7 +244,7 @@ def execute():
         ALU_output=dectobin(temp,32)
         print(operation+" of x"+str(arg1)+" and "+str(bintodec(imm))+" is "+str(bintodec(ALU_output)))
     elif operation in ["lb","lw","lh","sb","sh","sw"]:
-        temp=bintodec(Reg[arg1])+bintodec(imm)
+        temp=int(Reg[arg1],2)+bintodec(imm)
         ALU_output=dectobin(temp,32)
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
     elif operation=="jalr":
@@ -299,12 +300,41 @@ def memoryAcess():
     if not ALU_output:
         return
     ALu_output = int(ALU_output,base=2)
-    val = ALu_output%32
+    val = int(ALU_output,2)%32
+    key=hex(ALu_output)
     MDR = ''
+    if operation=="lw":
+        try:
+            MDR=Mem[key]
+        except KeyError:
+            MDR='0'*32
+        print("we retrieved the word of value:"+str(bintodec(MDR))+"at memory address:"+str(int(ALU_output,base=2)))
+    elif operation=="lh":
+        try:
+            MDR='0'*16 + Mem[key][:16]
+        except KeyError:
+            MDR='0'*32
+        print("we retrieved the halfword of value:"+str(bintodec(MDR))+"at memory address:"+str(int(ALU_output,base=2)))
+    elif operation=="lb":
+        try:
+            MDR='0'*24 + Mem[key][:8]
+        except KeyError:
+            MDR='0'*32
+        print("we retrieved the byte of value:"+str(bintodec(MDR))+"at memory address:"+str(int(ALU_output,base=2)))
+    elif operation=="sw":
+        Mem[key]=Reg[int(rs2,2)]
+        print("We stored the word "+Reg[int(rs2,2)]+" at the address"+str(key))
+    elif operation=="sh":
+        Mem[key]='0'*16+Reg[int(rs2,2)][:16]
+        print("We stored the halfword "+Reg[int(rs2,2)][:16]+" at the address"+str(key))
+    elif operation=="sb":
+        Mem[key]='0'*24+Reg[int(rs2,2)][:8]
+        print("We stored the byte "+Reg[int(rs2,2)][:8]+" at the address"+str(key))
+    '''
     if operation == "lw":
         for i in range(32):
             try:
-                MDR+= Mem[ALu_output//32][ALu_output%32]
+                MDR+= Mem[ALu_output][ALu_output%32]
             except KeyError:
                 MDR+='0'
             ALu_output+=1
@@ -312,7 +342,7 @@ def memoryAcess():
     elif operation == "lh":
         for i in range(16):
             try:
-                MDR+= Mem[ALu_output//32][ALu_output%32]
+                MDR+= Mem[ALu_output][ALu_output%32]
             except KeyError:
                 MDR+='0'
             ALu_output+=1
@@ -320,7 +350,7 @@ def memoryAcess():
     elif operation  == "lb":
         for i in range(8):
             try:
-                MDR+= Mem[ALu_output//32][ALu_output%32]
+                MDR+= Mem[ALu_output][ALu_output%32]
             except KeyError:
                 MDR+='0'
             ALu_output+=1
@@ -328,36 +358,36 @@ def memoryAcess():
     elif operation  == "sb":
         if val <=24:
             try:
-                contents = Mem[ALu_output//32]
+                contents = Mem[ALu_output]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 8:]
-            Mem[ALu_output//32] = k
+            k = contents[:val] + Reg[int(rs2,base=2)][-8:] + contents[val + 8:]
+            Mem[ALu_output] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
             try:
-                contents1= Mem[ALu_output//32]
+                contents1= Mem[ALu_output]
             except KeyError:
                 contents1='0'*32
             try:
-                contents2 = Mem[ALu_output//32+1]
+                contents2 = Mem[ALu_output+4]
             except KeyError:
                 contents2='0'*32
             a = 32 - val 
             b = 2 * val - 32
             k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
             k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
-            Mem[ALu_output//32] = k1
-            Mem[ALu_output//32+1] = k2
+            Mem[ALu_output] = k1
+            Mem[ALu_output+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
     elif operation  == "sh":
         if val <=16:
             try:
-                contents = Mem[ALu_output//32]
+                contents = Mem[ALu_output]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 8:]
-            Mem[ALu_output//32] = k
+            k = contents[:val] + Reg[int(rs2,base=2)][-16:] + contents[val + 8:]
+            Mem[ALu_output] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
             try:
@@ -373,24 +403,24 @@ def memoryAcess():
             k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
             k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
-            Mem[ALu_output//32+1] = k2
+            Mem[(ALu_output//32)+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
     elif operation  == "sw":
         if val <=0:
             try:
-                contents = Mem[ALu_output//32]
+                contents = Mem[ALu_output]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 16:]
-            Mem[ALu_output//32] = k
+            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 32:]
+            Mem[ALu_output] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
             try:
-                contents1= Mem[ALu_output//32]
+                contents1= Mem[ALu_output]
             except KeyError:
                 contents1='0'*32
             try:
-                contents2 = Mem[ALu_output//32+1]
+                contents2 = Mem[ALu_output+1]
             except KeyError:
                 contents2='0'*32
             a = 32 - val 
@@ -398,10 +428,10 @@ def memoryAcess():
             k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
             k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
-            Mem[ALu_output//32+1] = k2
+            Mem[(ALu_output//32)+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
     else:
-        return 
+        return''' 
 
 def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd destination register 
     rd1=int(rd,base=2)
@@ -437,16 +467,16 @@ def storeState():
     f=open("store.txt","w+")
     f.write("Registers\n")
     for i in range(32):
-        f.write("x"+str(i)+":"+Reg[i])         #Registers: 0000..... 0000....1 ......
+        f.write("x"+str(i)+":"+hex(int(Reg[i],2)))         #Registers: 0000..... 0000....1 ......
         f.write("\n")            #Memory:00.000 0012.. 
     f.write("\n\n")
     f.write("Memory\n")
     for key in Mem.keys():
-        f.write(str(key*32)+" "+str(Mem[key]))
+        f.write(str(key)+" "+str(hex(int(Mem[key],2))))
+        f.write('\n')
     f.close()    
        
 def run_RISCVsim():
-    setToStart()
     instructions=len(MachineCode)
     count=0
     while PC<=(instructions-1)*4:
@@ -457,4 +487,4 @@ def run_RISCVsim():
         writeback()
         count+=1
     storeState()
-    print("The total number of instructions are ",count)
+    print("The total number of clock cycles used ",count)
