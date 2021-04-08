@@ -119,9 +119,6 @@ def decode():
         elif(func3=="010"):
             operation="lw"
             print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
-        elif(func3=="011"):
-            operation="ld"
-            print("The operation is "+operation+". Rs1: "+rs1+" Rd: "+rd+" imm: "+imm)
     elif(opcode=="1100111"):
         imm=func7+rs2
         if(func3=="000"):
@@ -137,9 +134,6 @@ def decode():
             print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
         elif(func3=="010"):
             operation="sw"
-            print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
-        elif(func3=="011"):
-            operation="sd"
             print("The operation is "+operation+". Rs1: "+rs1+" Rs2: "+rs2+" imm: "+imm)
     elif(opcode=="1100011"):
         imm=func7[0]+rd[-1]+func7[1:]+rd[0:-1]+"0"
@@ -248,7 +242,35 @@ def execute():
         ALU_output=temp2
         print("The effective address for "+operation+" is "+ALU_output)
         print("The PC has been changed to "+str(temp))
-    elif operation in ["beg","bne","bge","blt","auipc"]:
+    elif operation=="beg":
+        if Reg[arg1]==Reg[arg2]:
+            PC+=bintodec(imm)
+            print("The condition is true")
+            print("The PC has been updated to "+str(PC))
+        else:
+            print("The condition is false.")
+    elif operation=="bne":
+        if Reg[arg1]!=Reg[arg2]:
+            PC+=bintodec(imm)
+            print("The condition is true")
+            print("The PC has been updated to "+str(PC))
+        else:
+            print("The condition is false.")
+    elif operation=="bge":
+        if Reg[arg1]>=Reg[arg2]:
+            PC+=bintodec(imm)
+            print("The condition is true")
+            print("The PC has been updated to "+str(PC))
+        else:
+            print("The condition is false.")
+    elif operation=="blt":
+        if Reg[arg1]<Reg[arg2]:
+            PC+=bintodec(imm)
+            print("The condition is true")
+            print("The PC has been updated to "+str(PC))
+        else:
+            print("The condition is false.")
+    elif operation =="auipc":
         PC+=bintodec(imm)
         print("The effective address for "+operation+" is "+ALU_output)
     elif operation=="lui":
@@ -274,59 +296,59 @@ def memoryAcess():
             Alu_output+1
         print("we retrieved the word of value:"+MDR+"at memory address:"+ALU_output)
     elif operation == "lh":
-         for i in range(16):
+        for i in range(16):
             MDR+= Mem[Alu_output//32][ALu_output%32]
             ALu_output+=1
         print("we retrieved the half word of value:"+MDR+"at memory address:"+ALU_output)
     elif operation  == "lb":
-         for i in range(8):
+        for i in range(8):
             MDR+= Mem[Alu_output//32][ALu_output%32]
             ALu_output+=1
         print("we retrieved the byte of value:"+MDR+"at memory address:"+ALU_output)
     elif operation  == "sb":
-         if val <=24:
-             contents = Mem[ALu_output//32]
-             k = contents[:val] + rs2 + contents[val + 8:]
-             Mem[ALu_output//32] = k
-         else:
-              contents1= Mem[ALu_output//32]
-              contents2 = Mem[ALu_output//32+1]
-              a = 32 - val 
-              b = 2 * val - 32
-              k1 = contents1[:val] + rs2[:a]
-              k2 = rs2[-b:] + contents2[b:]
-              Mem[ALu_output//32] = k1
-              Mem[ALu_output//32+1] = k2
+        if val <=24:
+            contents = Mem[ALu_output//32]
+            k = contents[:val] + rs2 + contents[val + 8:]
+            Mem[ALu_output//32] = k
+        else:
+            contents1= Mem[ALu_output//32]
+            contents2 = Mem[ALu_output//32+1]
+            a = 32 - val 
+            b = 2 * val - 32
+            k1 = contents1[:val] + rs2[:a]
+            k2 = rs2[-b:] + contents2[b:]
+            Mem[ALu_output//32] = k1
+            Mem[ALu_output//32+1] = k2
         print("we stored the byte at memory address:"+ALU_output)
     elif operation  == "sh":
-         if val <=16:
-              contents = Mem[ALu_output//32]
-              k = contents[:val] + rs2 + contents[val + 8:]
-              Mem[ALu_output//32] = k
-         else:
-              contents1= Mem[ALu_output//32]
-              contents2 = Mem[ALu_output//32+1]
-              a = 32 - val 
-              b = 2 * val - 32
-              k1 = contents1[:val] + rs2[:a]
-              k2 = rs2[-b:] + contents2[b:]
-              Mem[ALu_output//32] = k1
-              Mem[ALu_output//32+1] = k2
+        if val <=16:
+            contents = Mem[ALu_output//32]
+            k = contents[:val] + rs2 + contents[val + 8:]
+            Mem[ALu_output//32] = k
+        else:
+            contents1= Mem[ALu_output//32]
+            contents2 = Mem[ALu_output//32+1]
+            a = 32 - val 
+            b = 2 * val - 32
+            k1 = contents1[:val] + rs2[:a]
+            k2 = rs2[-b:] + contents2[b:]
+            Mem[ALu_output//32] = k1
+            Mem[ALu_output//32+1] = k2
         print("we stored the half word at memory address:"+ALU_output)
     elif operation  == "sw":
-          if val <=0:
-             contents = Mem[ALu_output//32]
-             k = contents[:val] + rs2 + contents[val + 16:]
-             Mem[ALu_output//32] = k
-          else:
-             contents1= Mem[ALu_output//32]
-             contents2 = Mem[ALu_output//32+1]
-             a = 32 - val 
-             b = 2 * val - 32
-             k1 = contents1[:val] + rs2[:a]
-             k2 = rs2[-b:] + contents2[b:]
-             Mem[ALu_output//32] = k1
-             Mem[ALu_output//32+1] = k2
+        if val <=0:
+            contents = Mem[ALu_output//32]
+            k = contents[:val] + rs2 + contents[val + 16:]
+            Mem[ALu_output//32] = k
+        else:
+            contents1= Mem[ALu_output//32]
+            contents2 = Mem[ALu_output//32+1]
+            a = 32 - val 
+            b = 2 * val - 32
+            k1 = contents1[:val] + rs2[:a]
+            k2 = rs2[-b:] + contents2[b:]
+            Mem[ALu_output//32] = k1
+            Mem[ALu_output//32+1] = k2
         print("we stored the word at memory address:"+ALU_output)
             
     else:
@@ -349,7 +371,6 @@ def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd 
     elif(operation=="lui" or operation=="auipc"):
         Reg[rd1]=ALU_output
         print("the answer: "+ALU_output+" is updated in the register x"+str(rd1))
-    print("Memory write successful")
 
 def setToStart():
     global Reg,Mem,PC,IR,rs1,rs2,rd,imm,operation,MDR,ALU_output
@@ -374,14 +395,15 @@ def storeState():
         f.write("x"+str(i)+":"+Reg[i])         #Registers: 0000..... 0000....1 ......
         f.write("\n")            #Memory:00.000 0012.. 
     f.write("\n\n")
-    f.write("Memory: ")
+    f.write("Memory:\n")
     for j in range(4000):
-        f.write(Mem[j])
+        f.write(str(hex(j*4))+" "+Mem[j])
         f.write(" ")
         f.write("\n")    
     f.close()    
        
 def run_RISCVsim():
+    setToStart()
     instructions=len(MachineCode)
     while PC<=(instructions-1)*4:
         fetch()
@@ -389,3 +411,5 @@ def run_RISCVsim():
         execute()
         memoryAcess()
         writeback()
+        input()
+    storeState()
