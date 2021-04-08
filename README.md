@@ -22,36 +22,17 @@ Directory Structure:
 --------------------
 CS204-Project
   |
-  |- bin
-      |
-      |- myRISCVSim
-  |- doc
-      |
-      |- design-doc.docx
-  |- include
-      |
-      |- myRISCVSim.h
-  |- src
-      |- main.c
-      |- Makefile
-      |- myRISCVSim.h
+  |- readme.md
+  |
+  |-main.py
+  |
+  |-Simulator.py
+  |
   |- test
       |- simple_add.mc
       |- fib.mc
-      |- array_add.mc
       |- fact.mc
-      |- bubble.mc
       
-How to build
-------------
-For building:
-	$cd src
-	$make
-
-For cleaning the project:
-	$cd src
-	$make clean
-
 
 How to execute
 --------------
