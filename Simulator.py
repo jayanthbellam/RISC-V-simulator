@@ -245,7 +245,7 @@ def execute():
         ALU_output=temp2
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
         print("The PC has been changed to "+str(temp))
-    elif operation=="beg":
+    elif operation=="beq":
         if Reg[arg1]==Reg[arg2]:
             PC+=bintodec(imm)-4
             print("The condition is true")
