@@ -382,14 +382,10 @@ def storeState():
     f.close()    
        
 def run_RISCVsim():
-    fetch()
-    decode()
-    execute()
-    memoryAcess()
-    writeback()
-
-readFile('simple_add.mc')
-setToStart()
-instructions=len(MachineCode)
-while PC<=(instructions-1)*4:
-    run_RISCVsim()
+    instructions=len(MachineCode)
+    while PC<=(instructions-1)*4:
+        fetch()
+        decode()
+        execute()
+        memoryAcess()
+        writeback()
