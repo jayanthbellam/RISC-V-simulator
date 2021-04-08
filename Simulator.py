@@ -39,7 +39,7 @@ PC=0
 Reg=['0'*32 for j in range(32)]
 
 #memory
-Mem=['0'*32]*4000
+Mem={}
 
     
 def fetch():
@@ -310,6 +310,7 @@ def memoryAcess():
             contents = Mem[ALu_output//32]
             k = contents[:val] + rs2 + contents[val + 8:]
             Mem[ALu_output//32] = k
+            print("we stored the byte "+k+" at memory address:"+ALU_output)
         else:
             contents1= Mem[ALu_output//32]
             contents2 = Mem[ALu_output//32+1]
@@ -319,12 +320,13 @@ def memoryAcess():
             k2 = rs2[-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
-        print("we stored the byte at memory address:"+ALU_output)
+            print("we stored the byte "+k1+k2+" at memory address:"+ALU_output)
     elif operation  == "sh":
         if val <=16:
             contents = Mem[ALu_output//32]
             k = contents[:val] + rs2 + contents[val + 8:]
             Mem[ALu_output//32] = k
+            print("we stored the byte "+k+" at memory address:"+ALU_output)
         else:
             contents1= Mem[ALu_output//32]
             contents2 = Mem[ALu_output//32+1]
@@ -334,12 +336,13 @@ def memoryAcess():
             k2 = rs2[-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
-        print("we stored the half word at memory address:"+ALU_output)
+            print("we stored the byte "+k1+k2+" at memory address:"+ALU_output)
     elif operation  == "sw":
         if val <=0:
             contents = Mem[ALu_output//32]
             k = contents[:val] + rs2 + contents[val + 16:]
             Mem[ALu_output//32] = k
+            print("we stored the byte "+k+" at memory address:"+ALU_output)
         else:
             contents1= Mem[ALu_output//32]
             contents2 = Mem[ALu_output//32+1]
@@ -349,8 +352,7 @@ def memoryAcess():
             k2 = rs2[-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
-        print("we stored the word at memory address:"+ALU_output)
-            
+            print("we stored the byte "+k1+k2+" at memory address:"+ALU_output)
     else:
         return 
 
@@ -395,11 +397,6 @@ def storeState():
         f.write("x"+str(i)+":"+Reg[i])         #Registers: 0000..... 0000....1 ......
         f.write("\n")            #Memory:00.000 0012.. 
     f.write("\n\n")
-    f.write("Memory:\n")
-    for j in range(4000):
-        f.write(str(hex(j*4))+" "+Mem[j])
-        f.write(" ")
-        f.write("\n")    
     f.close()    
        
 def run_RISCVsim():
