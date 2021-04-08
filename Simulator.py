@@ -16,10 +16,10 @@ def readFile(file):
 
 def bintodec(binary):
     length=len(binary)
-    number=int(binary[1:],base=2)
+    number=int(binary,base=2)
     if binary[0]=='0':
         return number
-    return number-2**(length-1)
+    return number-2**(length)
 
 def dectobin(integer,length):
     if integer>=0:
@@ -134,10 +134,10 @@ def decode():
             print("The operation is "+operation+". Rs1: "+str(arg1)+" Rs2: "+str(arg2)+" imm: "+str(bintodec(imm)))
         elif(func3=="001"):
             operation="sh"
-            print("The operation is "+operation+". Rs1: "+str(arg1)+" Rs2: "+str(arg2))+" imm: "+str(bintodec(imm))
+            print("The operation is "+operation+". Rs1: "+str(arg1)+" Rs2: "+str(arg2)+" imm: "+str(bintodec(imm)))
         elif(func3=="010"):
             operation="sw"
-            print("The operation is "+operation+". Rs1: "+str(arg1)+" Rs2: "+str(arg2))+" imm: "+str(bintodec(imm))
+            print("The operation is "+operation+". Rs1: "+str(arg1)+" Rs2: "+str(arg2)+" imm: "+str(bintodec(imm)))
     elif(opcode=="1100011"):
         imm=func7[0]+rd[-1]+func7[1:]+rd[0:-1]+"0"
         if(func3=="000"):
@@ -175,53 +175,53 @@ def execute():
         print(operation+" of x" +str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="sub":
         ALU_output=dectobin(bintodec(Reg[arg1])-bintodec(Reg[arg2]),32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="sll":
         shif=bintodec(Reg[arg2])
         temp=Reg[arg1][shif:]+'0'*shif
         ALU_output=temp
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="slt":
         r1=bintodec(Reg[arg1])
         r2=bintodec(Reg[arg2])
         ALU_output=1 if r1<r2 else 0
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="sltu":
-        ALU_output=1 if int(r1,base=2)<int(r2,base=2) else 0
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        ALU_output=1 if int(Reg[arg1],base=2)<int(Reg[arg2],base=2) else 0
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="xor":
         ALU_output=dectobin(bintodec(Reg[arg1])^bintodec(Reg[arg2]),32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="srl":
         shif=bintodec(Reg[arg2])
         temp='0'*shif+Reg[arg1][:-shif]
         ALU_output=temp
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="sra":
         shif=bintodec(Reg[arg2])
         temp='1'*shif+Reg[arg1][:-shif]
         ALU_output=temp
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+bintodec(ALU_output))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+bintodec(ALU_output))
     elif operation=="or":
         temp=bintodec(Reg[arg1])|bintodec(Reg[arg2])
         ALU_output=dectobin(temp, 32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="and":
         temp=bintodec(Reg[arg1])&bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="mul":
         temp=bintodec(Reg[arg1]) * bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="div":
         temp=bintodec(Reg[arg1]) // bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32) 
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="rem":
         temp=bintodec(Reg[arg1]) % bintodec(Reg[arg2])
         ALU_output=dectobin(temp,32)
-        print(operation+" of x"+arg1+" and x"+arg2+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and x"+str(arg2)+" is "+str(bintodec(ALU_output)))
     elif operation=="addi":
         temp=bintodec(Reg[arg1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
@@ -229,18 +229,18 @@ def execute():
     elif operation=="ori":
         temp=bintodec(Reg[arg1])|bintodec(imm)
         ALU_output=dectobin(temp,32)
-        print(operation+" of x"+arg1+" and "+str(bintodec(imm))+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and "+str(bintodec(imm))+" is "+str(bintodec(ALU_output)))
     elif operation=="andi":
         temp=bintodec(Reg[arg1])&bintodec(imm)
         ALU_output=dectobin(temp,32)
-        print(operation+" of x"+arg1+" and "+str(bintodec(imm))+" is "+str(bintodec(ALU_output)))
+        print(operation+" of x"+str(arg1)+" and "+str(bintodec(imm))+" is "+str(bintodec(ALU_output)))
     elif operation in ["lb","lw","lh","sb","sh","sw"]:
         temp=bintodec(Reg[arg1])+bintodec(imm)
         ALU_output=dectobin(temp,32)
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
     elif operation=="jalr":
         temp=bintodec(Reg[arg1])+bintodec(imm)
-        temp2=PC
+        temp2=bin(PC).replace('0b','')
         PC=temp
         ALU_output=temp2
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
@@ -281,9 +281,9 @@ def execute():
         print(operation+" is done")
     elif operation=="jal":
         temp=bintodec(imm)-4
-        temp2=PC
+        temp2=bin(PC).replace('0b','')
         PC=temp
-        ALU_ouput=temp2
+        ALU_output=temp2
         print(operation+" is done")
 
 def memoryAcess():
@@ -299,7 +299,7 @@ def memoryAcess():
                 MDR+= Mem[ALu_output//32][ALu_output%32]
             except KeyError:
                 MDR+='0'
-            Alu_output+=1
+            ALu_output+=1
         print("we retrieved the word of value:"+str(bintodec(MDR))+"at memory address:"+str(int(ALU_output,base=2)))
     elif operation == "lh":
         for i in range(16):
@@ -323,7 +323,7 @@ def memoryAcess():
                 contents = Mem[ALu_output//32]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + rs2 + contents[val + 8:]
+            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 8:]
             Mem[ALu_output//32] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
@@ -337,8 +337,8 @@ def memoryAcess():
                 contents2='0'*32
             a = 32 - val 
             b = 2 * val - 32
-            k1 = contents1[:val] + rs2[:a]
-            k2 = rs2[-b:] + contents2[b:]
+            k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
+            k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
@@ -348,7 +348,7 @@ def memoryAcess():
                 contents = Mem[ALu_output//32]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + rs2 + contents[val + 8:]
+            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 8:]
             Mem[ALu_output//32] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
@@ -362,8 +362,8 @@ def memoryAcess():
                 contents2='0'*32
             a = 32 - val 
             b = 2 * val - 32
-            k1 = contents1[:val] + rs2[:a]
-            k2 = rs2[-b:] + contents2[b:]
+            k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
+            k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
@@ -373,7 +373,7 @@ def memoryAcess():
                 contents = Mem[ALu_output//32]
             except KeyError:
                 contents='0'*32
-            k = contents[:val] + rs2 + contents[val + 16:]
+            k = contents[:val] + Reg[int(rs2,base=2)] + contents[val + 16:]
             Mem[ALu_output//32] = k
             print("we stored the byte "+k+" at memory address:"+str(int(ALU_output,base=2)))
         else:
@@ -383,12 +383,12 @@ def memoryAcess():
                 contents1='0'*32
             try:
                 contents2 = Mem[ALu_output//32+1]
-            except:
+            except KeyError:
                 contents2='0'*32
             a = 32 - val 
             b = 2 * val - 32
-            k1 = contents1[:val] + rs2[:a]
-            k2 = rs2[-b:] + contents2[b:]
+            k1 = contents1[:val] + Reg[int(rs2,base=2)][:a]
+            k2 = Reg[int(rs2,base=2)][-b:] + contents2[b:]
             Mem[ALu_output//32] = k1
             Mem[ALu_output//32+1] = k2
             print("we stored the byte "+k1+k2+" at memory address:"+str(int(ALU_output,base=2)))
@@ -438,10 +438,14 @@ def storeState():
 def run_RISCVsim():
     setToStart()
     instructions=len(MachineCode)
+    count=0
     while PC<=(instructions-1)*4:
         fetch()
         decode()
         execute()
         memoryAcess()
         writeback()
-    storeState()
+        storeState()
+        input()
+        count+=1
+    print("The total number of instructions are ",count)
