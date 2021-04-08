@@ -241,10 +241,10 @@ def execute():
     elif operation=="jalr":
         temp=bintodec(Reg[arg1])+bintodec(imm)
         temp2=bin(PC).replace('0b','')
-        PC=temp
+        PC+=temp-4
         ALU_output=temp2
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
-        print("The PC has been changed to "+str(temp))
+        print("The PC has been changed to "+str(PC))
     elif operation=="beq":
         if Reg[arg1]==Reg[arg2]:
             PC+=bintodec(imm)-4
@@ -282,7 +282,7 @@ def execute():
     elif operation=="jal":
         temp=bintodec(imm)-4
         temp2=bin(PC).replace('0b','')
-        PC=temp
+        PC+=temp
         ALU_output=temp2
         print(operation+" is done")
 
