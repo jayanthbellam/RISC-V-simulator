@@ -244,40 +244,40 @@ def execute():
         print("The PC has been changed to "+str(temp))
     elif operation=="beg":
         if Reg[arg1]==Reg[arg2]:
-            PC+=bintodec(imm)
+            PC+=bintodec(imm)-4
             print("The condition is true")
             print("The PC has been updated to "+str(PC))
         else:
             print("The condition is false.")
     elif operation=="bne":
         if Reg[arg1]!=Reg[arg2]:
-            PC+=bintodec(imm)
+            PC+=bintodec(imm)-4
             print("The condition is true")
             print("The PC has been updated to "+str(PC))
         else:
             print("The condition is false.")
     elif operation=="bge":
         if Reg[arg1]>=Reg[arg2]:
-            PC+=bintodec(imm)
+            PC+=bintodec(imm)-4
             print("The condition is true")
             print("The PC has been updated to "+str(PC))
         else:
             print("The condition is false.")
     elif operation=="blt":
         if Reg[arg1]<Reg[arg2]:
-            PC+=bintodec(imm)
+            PC+=bintodec(imm)-4
             print("The condition is true")
             print("The PC has been updated to "+str(PC))
         else:
             print("The condition is false.")
     elif operation =="auipc":
-        PC+=bintodec(imm)
+        PC+=bintodec(imm)-4
         print("The effective address for "+operation+" is "+ALU_output)
     elif operation=="lui":
         ALU_output=imm
         print(operation+" is done")
     elif operation=="jal":
-        temp=bintodec(imm)
+        temp=bintodec(imm)-4
         temp2=PC
         PC=temp
         ALU_ouput=temp2
@@ -411,5 +411,4 @@ def run_RISCVsim():
         execute()
         memoryAcess()
         writeback()
-        input()
     storeState()
