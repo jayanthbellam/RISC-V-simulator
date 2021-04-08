@@ -1,15 +1,23 @@
-
 def readFile(file):
     File=open(file,'r')
     global MachineCode
     MachineCode=[]
     while True:
         inst=File.readline()
-        if inst:
+        try:
             _,inst=inst.split()
             inst=bin(int(inst,base=16)).replace('0b','')
             inst='0'*(32-len(inst))+inst
             MachineCode.append(inst)
+        except ValueError:
+            break
+    while True:
+        inst=File.readline()
+        if inst:
+            key,val=inst.split()
+            val=bin(int(val,base=16)).replace('0b','')
+            val='0'*(32-len(val))+val
+            Mem[int(key,base=16)//32]=val
         else:
             break
     File.close()
