@@ -36,5 +36,5 @@ CS204-Project
 
 How to execute
 --------------
-./myRISCVSim test/simple_add.mc
-
+Use the following command in cmd
+python .\main.py .\test\file_name
