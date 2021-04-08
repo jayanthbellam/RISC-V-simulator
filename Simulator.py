@@ -398,10 +398,13 @@ def memoryAcess():
 def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd destination register 
     rd1=int(rd,base=2)
     if(operation in ["add","slt","and","or","sll","sra","mul","srl","sub","xor","div","rem","addi","andi","ori"]):
+        Reg[rd1]=ALU_output
         print("the result "+str(bintodec(ALU_output))+" is updated in the register x"+str(rd1))
     elif operation in ["lb,lh,lw"]:
+        Reg[rd1]=MDR
         print("the result "+str(int(MDR,base=2))+" is updated in the register x"+str(rd1))
     elif operation in ["jalr","jal","lui","auipc"]:
+        Reg[rd1]=ALU_output
         print("The result "+str(int(ALU_output,base=2))+" is updated in the register x"+str(rd1))
 
 def setToStart():
