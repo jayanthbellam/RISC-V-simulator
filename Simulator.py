@@ -239,9 +239,9 @@ def execute():
         ALU_output=dectobin(temp,32)
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
     elif operation=="jalr":
-        temp=bintodec(Reg[arg1])+bintodec(imm)
+        temp=int(Reg[arg1],base=2)+bintodec(imm)
         temp2=bin(PC).replace('0b','')
-        PC+=temp-4
+        PC=temp
         ALU_output=temp2
         print("The effective address for "+operation+" is "+str(bintodec(ALU_output)))
         print("The PC has been changed to "+str(PC))
@@ -280,10 +280,10 @@ def execute():
         ALU_output=imm
         print(operation+" is done")
     elif operation=="jal":
-        temp=bintodec(imm)-4
+        temp=bintodec(imm)
         temp2=bin(PC).replace('0b','')
-        PC+=temp
-        ALU_output=temp2
+        PC+=temp-4
+        ALU_output='0'*(32-len(temp2))+temp2
         print(operation+" is done")
 
 def memoryAcess():
@@ -397,6 +397,8 @@ def memoryAcess():
 
 def writeback():  #data from memory ,#   from excute for ALU instructions ,# rd destination register 
     rd1=int(rd,base=2)
+    if rd1==0:
+        return
     if(operation in ["add","slt","and","or","sll","sra","mul","srl","sub","xor","div","rem","addi","andi","ori"]):
         Reg[rd1]=ALU_output
         print("the result "+str(bintodec(ALU_output))+" is updated in the register x"+str(rd1))
@@ -446,5 +448,6 @@ def run_RISCVsim():
         memoryAcess()
         writeback()
         storeState()
+        input()
         count+=1
     print("The total number of instructions are ",count)
