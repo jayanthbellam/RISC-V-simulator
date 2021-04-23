@@ -42,19 +42,21 @@ def dectobin(integer,length):
         binary='1'+'0'*(length-1-le)+temp        
     return binary
 
+global Reg,Mem,PC
 #register File
 Reg=['0'*32 for j in range(32)]
 
 #memory
 Mem={}
-
+PC=0
     
-def fetch(PC):
+def fetch():
+    global PC
     IR=MachineCode[PC//4]
     PC+=4
     print("The instruction is "+str(hex(int(IR,2))))
     print("PC incremented from "+str(PC-4)+" to "+str(PC))
-    return PC,IR
+    return IR
 def decode(IR):
     operation=''
     opcode=IR[-7:]
@@ -220,7 +222,8 @@ def decode(IR):
         return operation,arguments
     print("Invalid Operation")
 
-def execute(operation,arguments,PC):
+def execute(operation,arguments):
+    global PC
     ALU_output=''
     arg1=int(arguments['rs1'],base=2)
     arg2=int(arguments['rs2'],base=2)
@@ -395,11 +398,12 @@ def writeback(operation,arguments,MDR,ALU_output):  #data from memory ,#   from 
         print("The result "+str(int(ALU_output,base=2))+" is updated in the register x"+str(rd1))
 
 def setToStart():
-    global Reg,Mem
+    global Reg,Mem,PC
     Reg=['0'*32]*32
     Mem={}
     Reg[2]='01111111111111111111111111110000'
     Reg[3]='00010000000000000000000000000000'
+    PC=0
 
 def storeState():
     global Reg,Mem
@@ -418,11 +422,10 @@ def storeState():
 def run_RISCVsim():
     instructions=len(MachineCode)
     count=0
-    PC=0
     while PC<=(instructions-1)*4:
-        PC,IR=fetch(PC)
+        IR=fetch()
         operation,arguments=decode(IR)
-        ALU_output=execute(operation,arguments,PC)
+        ALU_output=execute(operation,arguments)
         MDR=memoryAcess(operation,ALU_output,arguments)
         writeback(operation,arguments,MDR,ALU_output)
         count+=1
