@@ -18,7 +18,7 @@ Table of contents
 3. How to execute
 
 
-Directory Structure:
+### Directory Structure:
 --------------------
 CS204-Project
   |
