@@ -43,7 +43,7 @@ Use the following command in cmd:
 python .\main.py .\test\file_name
     
 ----------
-Phase 1:<br />
+Phase 1:
       Implemented all stages i.e. Fetch, Decode, Execute, Memory Access, Writeback
 
 Phase 2:
