@@ -12,11 +12,6 @@ README
         Satia	                               2019CSB1118
         Keshav Goyal	                       2019CSB1165
 
-Table of contents
-1. Directory Structure
-2. How to build
-3. How to execute
-
 
 ### Directory Structure: 
       CS204-Project
