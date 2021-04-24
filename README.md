@@ -21,16 +21,20 @@ Table of contents
 ### Directory Structure: 
       CS204-Project
         |
-        |- readme.md
-        |
-        |-main.py
-        |
-        |-Simulator.py
-        |
-        |- test
+        |- phase 1
+             |-
+             |-
+        |- phase 2
+             |-Instruction.py
+             |-hazard.py
+             |-main.py
+        |     
+        |- README.md
+        |- main.py
+        |- Simulator.py
         |- simple_add.mc
-        |- fib.mc
-        |- fact.mc
+        |- fibonacci.mc
+        |- factorial.mc
 
       
 
@@ -40,7 +44,7 @@ python .\main.py .\test\file_name
     
 ----------
 Phase 1:
-Implemented all stages i.e. Fetch, Execute, Decode, Memory, Writeback
+Implemented all stages i.e. Fetch, Decode, Execute, Memory Access, Writeback
 
 Phase 2:
 Implemented pipeline structure with and without data forwarding
