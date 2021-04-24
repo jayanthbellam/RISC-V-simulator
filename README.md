@@ -34,7 +34,7 @@ Table of contents
 
       
 
-How to execute
+### How to execute
 --------------
 Use the following command in cmd
 python .\main.py .\test\file_name
