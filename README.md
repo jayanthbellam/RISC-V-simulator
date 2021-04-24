@@ -44,5 +44,6 @@ Implemented all stages i.e. Fetch, Execute, Decode, Memory, Writeback
 
 Phase 2:
 Implemented pipeline structure with and without data forwarding
+hlo
 
 Phase 3:
