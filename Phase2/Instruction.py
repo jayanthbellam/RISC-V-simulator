@@ -82,7 +82,7 @@ class ControlUnit:
             state.is_actual_instruction=False
         return state
 
-    def decode(self,state):
+    def decode(self,state,btb):
         if state.is_actual_instruction==False:
             return state
         opcode=state.IR & (0x7F)
@@ -209,6 +209,25 @@ class ControlUnit:
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Imm: '+str(self.twoscomplement(state.imm,12)))
+
+            if state.operation=='beq':
+                if self.RegisterFile[state.rs1]==self.RegisterFile[state.rs2]:
+                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+                    state.Alu_out=1
+            elif state.operation=='blt':
+                if self.RegisterFile[state.rs1]<self.RegisterFile[state.rs2]:
+                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+                    state.Alu_out=1
+            elif state.operation=='bge':
+                if self.RegisterFile[state.rs1]>=self.RegisterFile[state.rs2]:
+                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+                    state.Alu_out=1
+            elif state.operation=='bne':
+                if self.RegisterFile[state.rs1]!=self.RegisterFile[state.rs2]:
+                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+                    state.Alu_out=1
+            if self.twoscomplement(state.imm,12)<0:
+                btb.update(state.PC,state.PC_temp)
         elif opcode==23:
             rd=state.IR&(0xF80)
             rd=rd>>7
@@ -241,6 +260,13 @@ class ControlUnit:
             state.operation='jal'
             print('The operation is '+str(state.operation))
             print('Rd: '+str(state.rd)+" Imm: "+str(self.twoscomplement(state.imm,21)))
+            temp=self.twoscomplement(imm,21)
+            state.PC_temp=state.PC+temp
+            btb.update(state.PC,state.PC_temp)
+            state.Alu_out=state.PC+4
+            print('Executed the operation '+ str(state.operation))
+            print('The value of Procedure Address: '+str(temp))
+            print('The ALU_output: '+str(state.Alu_out))
         return state
     
     def execute(self,state):
@@ -316,37 +342,37 @@ class ControlUnit:
             state.Alu_out=state.imm
             print('Executed the operation '+ str(state.operation))
             print('The immediate Value: '+str(self.twoscomplement(state.imm,32)))
-        elif state.operation=='jal':
-            temp=self.twoscomplement(state.imm,21)
-            state.PC_temp=state.PC+temp
-            state.Alu_out=state.PC+4
-            print('Executed the operation '+ str(state.operation))
-            print('The value of Procedure Address: '+str(temp))
-            print('The ALU_output: '+str(state.Alu_out))
-        if state.opcode==99:
-            if state.operation=='beq':
-                if self.RegisterFile[state.rs1]==self.RegisterFile[state.rs2]:
-                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-                    state.Alu_out=1
-            elif state.operation=='blt':
-                if self.RegisterFile[state.rs1]<self.RegisterFile[state.rs2]:
-                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-                    state.Alu_out=1
-            elif state.operation=='bge':
-                if self.RegisterFile[state.rs1]>=self.RegisterFile[state.rs2]:
-                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-                    state.Alu_out=1
-            elif state.operation=='bne':
-                if self.RegisterFile[state.rs1]!=self.RegisterFile[state.rs2]:
-                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-                    state.Alu_out=1
-            print('Executed the operation '+ str(state.operation))
-            print('Value in Rs1: '+str(self.twoscomplement(self.RegisterFile[state.rs1],32))+' Rs2: '+str(self.twoscomplement(self.RegisterFile[state.rs2],32)))
-            print('Value of offset: '+str(state.PC_temp))
-            if(state.Alu_out==1):
-                print('The branch is taken')
-            else:
-                print('The branch is not taken')
+#        elif state.operation=='jal': handled in decode itself
+#            temp=self.twoscomplement(state.imm,21)
+#            state.PC_temp=state.PC+temp
+#            state.Alu_out=state.PC+4
+#            print('Executed the operation '+ str(state.operation))
+#            print('The value of Procedure Address: '+str(temp))
+#            print('The ALU_output: '+str(state.Alu_out))
+#        if state.opcode==99:
+#            if state.operation=='beq':
+#                if self.RegisterFile[state.rs1]==self.RegisterFile[state.rs2]:
+#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+#                    state.Alu_out=1
+#            elif state.operation=='blt':
+#                if self.RegisterFile[state.rs1]<self.RegisterFile[state.rs2]:
+#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+#                    state.Alu_out=1
+#            elif state.operation=='bge':
+#                if self.RegisterFile[state.rs1]>=self.RegisterFile[state.rs2]:
+#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+#                    state.Alu_out=1
+#            elif state.operation=='bne':
+#                if self.RegisterFile[state.rs1]!=self.RegisterFile[state.rs2]:
+#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
+#                    state.Alu_out=1
+#            print('Executed the operation '+ str(state.operation))
+#            print('Value in Rs1: '+str(self.twoscomplement(self.RegisterFile[state.rs1],32))+' Rs2: '+str(self.twoscomplement(self.RegisterFile[state.rs2],32)))
+#            print('Value of offset: '+str(state.PC_temp))
+#            if(state.Alu_out==1):
+#                print('The branch is taken')
+#            else:
+#                print('The branch is not taken')
         state.PC=state.PC_temp
         return state
     
@@ -425,3 +451,4 @@ class BranchTargetBuffer:
         if self.checkBTB(PC):
             return self.table[PC]
         return -1
+    
