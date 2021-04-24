@@ -19,18 +19,19 @@ Table of contents
 
 
 ### Directory Structure: 
-CS204-Project
-  |
-  |- readme.md
-  |
-  |-main.py
-  |
-  |-Simulator.py
-  |
-  |- test
-      |- simple_add.mc
-      |- fib.mc
-      |- fact.mc
+      CS204-Project
+        |
+        |- readme.md
+        |
+        |-main.py
+        |
+        |-Simulator.py
+        |
+        |- test
+        |- simple_add.mc
+        |- fib.mc
+        |- fact.mc
+
       
 
 How to execute
