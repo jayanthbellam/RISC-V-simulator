@@ -18,8 +18,8 @@ Table of contents
 3. How to execute
 
 
-### Directory Structure:
-  CS204-Project
+### Directory Structure: 
+CS204-Project
   |
   |- readme.md
   |
