@@ -51,3 +51,12 @@ Implemented pipeline structure with and without data forwarding
 
 
 Phase 3:
+
+## Contributons
+ Bellam Jayanth -
+ Sagina Jaya Govinda Venkata Sai Teja -
+ Rohit Dagar -
+ Satia -
+ Keshav Goyal -  
+
+ 
