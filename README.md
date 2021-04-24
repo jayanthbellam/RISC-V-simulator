@@ -6,11 +6,11 @@ Functional Simulator for RISCV Processor
 README
 
 Team Members' names:
-Bellam Jayanth	2019CSB1080
-Sagina Jaya Govinda Venkata Sai Teja	2019CSB1114
-Rohit Dagar	2019EEB1186
-Satia	2019CSB1118
-Keshav Goyal	2019CSB1165
+        Bellam Jayanth	                      2019CSB1080
+        Sagina Jaya Govinda Venkata Sai Teja	2019CSB1114
+        Rohit Dagar	                          2019EEB1186
+        Satia	                                2019CSB1118
+        Keshav Goyal	                        2019CSB1165
 
 Table of contents
 1. Directory Structure
