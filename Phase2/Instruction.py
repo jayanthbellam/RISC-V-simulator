@@ -9,6 +9,8 @@ class State:
         self.PC=pc
         self.PC_temp=0
         self.IR=0
+        self.RA=0
+        self.RB=0
         self.MDR=0
         self.Alu_out=0
         self.is_actual_instruction=False
@@ -71,20 +73,28 @@ class ControlUnit:
         for key,val in self.MEM:
             file.write(str(key)+" : "+str(val))
 
-    def fetch(self,state):
+    def fetch(self,state,btb):
         try:
             state.IR=self.MachineCode[state.PC//4]
             state.PC_temp=state.PC+4
             state.is_actual_instruction=True
             print('Fetched the instruction '+str(hex(state.IR))+' and its PC is '+str(state.PC))
+            new_pc=0
+            outcome=False
+            if btb.targetBTB(state.PC)!=-1:
+                new_pc=btb.targetBTB(state.PC)
+                outcome=True
+            return  outcome,new_pc,state
         except IndexError:
             state.IR=0
             state.is_actual_instruction=False
-        return state
+            return False,0,state
 
     def decode(self,state,btb):
+        control_hazard=Flase
+        new_pc=0
         if state.is_actual_instruction==False:
-            return state
+            return control_hazard, new_pc, state
         opcode=state.IR & (0x7F)
         state.opcode=opcode
         #R type instructions
@@ -128,9 +138,12 @@ class ControlUnit:
                 state.operation='rem'
             else:
                 print("INVALID OPERATION")
+            state.RA=self.RegisterFile[rs1]
+            state.RB=self.RegisterFile[rs2]
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Rd: '+str(state.rd))
+        #I type instructions
         elif opcode==19 or opcode==3 or opcode==103:
             rs1=state.IR&(0xF8000)
             rs1=rs1>>15
@@ -143,6 +156,7 @@ class ControlUnit:
             state.rd=rd
             func3=state.IR&(0x7000)
             func3=func3>>12
+            state.RA=self.RegisterFile[rs1]
             if opcode==19:
                 if func3==0:
                     state.operation='addi'
@@ -158,6 +172,15 @@ class ControlUnit:
                 elif func3==2:
                     state.operation='lw'
             elif opcode==103 and func3==0:
+                temp=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
+                state.PC_temp=state.PC+temp
+                state.Alu_out=state.PC+4
+                print('Executed the operation '+ str(state.operation))
+                if not btb.checkBTB(state.PC):
+                    btb.updateBTB(state.PC,state.PC_temp)
+                    self.branch_mispred+=1
+                    control_hazard=True
+                    new_pc=state.PC_temp
                 state.operation='jalr'
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Imm: '+str(self.twoscomplement(state.imm,12)))
@@ -227,7 +250,17 @@ class ControlUnit:
                     state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
                     state.Alu_out=1
             if self.twoscomplement(state.imm,12)<0:
-                btb.update(state.PC,state.PC_temp)
+                if not btb.checkBTB(state.PC):
+                    btb.updateBTB(state.PC,state.PC_temp)
+                if state.Alu_out==0:
+                    self.branch_mispred+=1
+                    control_hazard=True
+                    new_pc=state.PC+4
+            else:
+                if state.Alu_out==1:
+                    self.branch_mispred+=1
+                    control_hazard=True
+                    new_pc=state.PC_temp
         elif opcode==23:
             rd=state.IR&(0xF80)
             rd=rd>>7
@@ -262,78 +295,77 @@ class ControlUnit:
             print('Rd: '+str(state.rd)+" Imm: "+str(self.twoscomplement(state.imm,21)))
             temp=self.twoscomplement(imm,21)
             state.PC_temp=state.PC+temp
-            btb.update(state.PC,state.PC_temp)
+            if not btb.checkBTB(state.PC):
+                btb.updateBTB(state.PC,state.PC_temp)
+                self.branch_mispred+=1
+                control_hazard=True
+                new_pc=state.PC_temp
             state.Alu_out=state.PC+4
             print('Executed the operation '+ str(state.operation))
             print('The value of Procedure Address: '+str(temp))
             print('The ALU_output: '+str(state.Alu_out))
-        return state
+        return control_hazard,new_pc,state
     
     def execute(self,state):
         if state.is_actual_instruction==False:
             return state
         if state.opcode==51:
             if state.operation=='add':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)+self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out=self.twoscomplement(state.RA,32)+self.twoscomplement(state.RB,32)
             elif state.operation=='and':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)&self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out=self.twoscomplement(state.RA,32)&self.twoscomplement(state.RB,32)
             elif state.operation=='or':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)|self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out=self.twoscomplement(state.RA,32)|self.twoscomplement(state.RB,32)
             elif state.operation=='sll':
-                temp=bin(self.RegisterFile[state.rs1])
+                temp=bin(state.RA)
                 temp='0'*(32-len(temp))+temp
-                temp=temp[self.twoscomplement(self.RegisterFile[state.rs2],32)%32:]+'0'*self.twoscomplement(self.RegisterFile[state.rs2],32)%32
+                temp=temp[self.twoscomplement(state.RB)%32:]+'0'*self.twoscomplement(state.RB,32)%32
                 state.Alu_out=int(temp,2)
             elif state.operation=='slt':
-                if self.twoscomplement(self.RegisterFile[state.rs1],32)<self.twoscomplement(self.RegisterFile[state.rs2],32):
+                if self.twoscomplement(state.RA,32)<self.twoscomplement(state.RB,32):
                     state.Alu_out=1
                 else:
                     state.Alu_out=0
             elif state.operation=='sra':
-                temp=bin(self.RegisterFile[state.rs1])
+                temp=bin(state.RA)
                 temp='0'*(32-len(temp))+temp
-                temp='1'*self.twoscomplement(self.RegisterFile[state.rs2],32)%32+temp[:self.twoscomplement(self.RegisterFile[state.rs2],32)%32]
+                temp='1'*self.twoscomplement(state.RB,32)%32+temp[:self.twoscomplement(self.RegisterFile[state.RB],32)%32]
             elif state.operation=='srl':
-                temp=bin(self.RegisterFile[state.rs1])
+                temp=bin(state.RA)
                 temp='0'*(32-len(temp))+temp
-                temp=temp[self.twoscomplement(self.RegisterFile[state.rs2],32)%32:]+'1'*self.twoscomplement(self.RegisterFile[state.rs2],32)%32
+                temp=temp[self.twoscomplement(state.RB,32)%32:]+'1'*self.twoscomplement(state.RB,32)%32
                 state.Alu_out=int(temp,2)
             elif state.operation=='sub':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)-self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out=self.twoscomplement(state.RA,32)-self.twoscomplement(state.RB,32)
             elif state.operation=='xor':
-                state.Alu_out= self.twoscomplement(self.RegisterFile[state.rs1],32)^self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out= self.twoscomplement(state.RA,32)^self.twoscomplement(state.RB,32)
             elif state.operation=='mul':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)*self.twoscomplement(self.RegisterFile[state.rs2],32)
+                state.Alu_out=self.twoscomplement(state.RA,32)*self.twoscomplement(state.RB,32)
             elif state.operation=='div':
                 try:
-                    state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)//self.twoscomplement(self.RegisterFile[state.rs2],32)
+                    state.Alu_out=self.twoscomplement(state.RA,32)//self.twoscomplement(state.RB,32)
                 except ZeroDivisionError:
                     state.Alu_out=0xFFFFFFFF
             elif state.operation=='rem':
                 try:
-                    state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)%self.twoscomplement(self.RegisterFile[state.rs2],32)
+                    state.Alu_out=self.twoscomplement(state.RA,32)%self.twoscomplement(state.RB,32)
                 except ZeroDivisionError:
-                    state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)
+                    state.Alu_out=self.twoscomplement(state.RA,32)
             print('Executed the operation '+ str(state.operation))
-            print('Value in Rs1: '+str(self.twoscomplement(self.RegisterFile[state.rs1],32))+' Rs2: '+str(self.twoscomplement(self.RegisterFile[state.rs2],32))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
+            print('Value in Rs1: '+str(self.twoscomplement(state.RA,32))+' Rs2: '+str(self.twoscomplement(state.RB,32))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
         if state.opcode in [19,3,103]:
             if state.operation=='addi':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)+self.twoscomplement(state.imm,12)
+                state.Alu_out=self.twoscomplement(state.RA,32)+self.twoscomplement(state.imm,12)
             elif state.operation=='andi':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)&self.twoscomplement(state.imm,12)
+                state.Alu_out=self.twoscomplement(state.RA,32)&self.twoscomplement(state.imm,12)
             elif state.operation=='ori':
-                state.Alu_out=self.twoscomplement(self.RegisterFile[state.rs1],32)|self.twoscomplement(state.imm,12)
+                state.Alu_out=self.twoscomplement(state.RA,32)|self.twoscomplement(state.imm,12)
             elif state.operation in ['lb','lw','lh','sb','sh','sw']:
                 state.Alu_out=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
-            elif state.operation=='jalr':
-                temp=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
-                state.PC_temp=state.PC+temp
-                state.Alu_out=state.PC+4
-            print('Executed the operation '+ str(state.operation))
             if state.operation not in ['sb,sh,sw']:
-                print('Value in Rs1: '+str(self.twoscomplement(self.RegisterFile[state.rs1],32))+' Imm: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
+                print('Value in Rs1: '+str(self.twoscomplement(state.RA,32))+' Imm: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
             else:
-                print('Value in Rs2: '+str(self.twoscomplement(self.RegisterFile[state.rs2],32))+' Imm: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
+                print('Value in Rs2: '+str(self.twoscomplement(state.RA,32))+' Imm: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
         elif state.operation=='auipc':
             state.Alu_out=state.PC+self.twoscomplement(state.imm,32)
             print('Executed the operation '+ str(state.operation))
@@ -342,37 +374,6 @@ class ControlUnit:
             state.Alu_out=state.imm
             print('Executed the operation '+ str(state.operation))
             print('The immediate Value: '+str(self.twoscomplement(state.imm,32)))
-#        elif state.operation=='jal': handled in decode itself
-#            temp=self.twoscomplement(state.imm,21)
-#            state.PC_temp=state.PC+temp
-#            state.Alu_out=state.PC+4
-#            print('Executed the operation '+ str(state.operation))
-#            print('The value of Procedure Address: '+str(temp))
-#            print('The ALU_output: '+str(state.Alu_out))
-#        if state.opcode==99:
-#            if state.operation=='beq':
-#                if self.RegisterFile[state.rs1]==self.RegisterFile[state.rs2]:
-#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-#                    state.Alu_out=1
-#            elif state.operation=='blt':
-#                if self.RegisterFile[state.rs1]<self.RegisterFile[state.rs2]:
-#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-#                    state.Alu_out=1
-#            elif state.operation=='bge':
-#                if self.RegisterFile[state.rs1]>=self.RegisterFile[state.rs2]:
-#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-#                    state.Alu_out=1
-#            elif state.operation=='bne':
-#                if self.RegisterFile[state.rs1]!=self.RegisterFile[state.rs2]:
-#                    state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
-#                    state.Alu_out=1
-#            print('Executed the operation '+ str(state.operation))
-#            print('Value in Rs1: '+str(self.twoscomplement(self.RegisterFile[state.rs1],32))+' Rs2: '+str(self.twoscomplement(self.RegisterFile[state.rs2],32)))
-#            print('Value of offset: '+str(state.PC_temp))
-#            if(state.Alu_out==1):
-#                print('The branch is taken')
-#            else:
-#                print('The branch is not taken')
         state.PC=state.PC_temp
         return state
     
