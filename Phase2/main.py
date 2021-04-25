@@ -10,28 +10,63 @@ else:
     PC=0
     clock=0
     pipelined_execution=True
-    data_forwarding=False
+    data_forwarding=True
     btb=BranchTargetBuffer()
     hazards=HAZ()
     if pipelined_execution:
         in_states=[State() for i in range(5)]
         out_states=[]
+        data_hazard_count=0
         if data_forwarding:
             while 1:
                 is_hazard=0
+                stall=0
                 w_stall=3 #3=> no stalling
                 for i in range(4,-1,-1):
                     if i==4:
                         overflow=ComputerState.write_back(in_states[4])
+                        hazard=hazards.data_hazard(in_states)
+                        in_states[3]=hazard[2][3]
+                        data_hazard_count+=hazard[4]
                     if i==3:
                         out_states.append(ComputerState.memory_access(in_states[3]))
                     if i==2:
                         out_states.append(ComputerState.execute(in_states[2]))
                     if i==1:
                         control_hazard,control_hazard_pc,tempstate=ComputerState.decode(in_states[1],btb)
-                    if i==0:
-                        outcome,new_pc,tempstate=ComputerState.fetch(in_states[0],btb)
                         out_states.append(tempstate)
+                    if i==0:
+                        control_change,control_change_pc,tempstate=ComputerState.fetch(in_states[0],btb)
+                        out_states.append(tempstate)
+                    if i!=4:
+                        hazard=hazards.data_hazard(in_states)
+                        in_states=hazard[2]
+                        is_hazard=min(is_hazard+hazard[0],1)
+                        stall=min(stall+hazard[1],1)
+                        w_stall=min(w_stall,hazard[3])
+                        data_hazard_count+=hazard[4]
+                out_states=out_states[::-1]
+
+                if out_states[0].is_actual_instruction and (stall==0):
+                    PC+=4
+                if control_change and stall==0:
+                    PC=control_change_pc
+                if control_hazard and stall==0:
+                    PC=control_hazard_pc
+                    out_states[0]=State(0)
+                if stall!=0:
+                    if w_stall==1:
+                        out_states=[in_states[1],in_states[2],State(),out_states[3]]
+                    else:
+                        out_states=[in_states[1],State(),out_states[2],out_states[3]]
+                if not (out_states[0].is_actual_instruction or out_states[1].is_actual_instruction or out_states[2].is_actual_instruction or out_states[3].is_actual_instruction):
+                        break
+                in_states=[State(PC)]+out_states
+                out_states=[]
+                input()
+            ComputerState.store_State('pipelined_data_forwarding.txt')
+            
+                
         #if data is not forwarded we implement stalling
         else:
             while 1:
