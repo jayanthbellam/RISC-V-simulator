@@ -1,4 +1,4 @@
-from Instruction import State,ControlUnit
+from Instruction import State,ControlUnit,BranchTargetBuffer
 import sys
 
 if len(sys.argv)<2:
@@ -10,6 +10,7 @@ else:
     clock=0
     pipelined_execution=False
     data_forwarding=False
+    btb=BranchTargetBuffer()
     if pipelined_execution:
         in_states=[State() for i in range(5)]
         out_states=[]
@@ -27,10 +28,15 @@ else:
                 if idx==2:
                     out_states.append(ControlUnit.execute(val))
                 if idx==1:
-                    out_states.append(ControlUnit.decode(val))
+                    control_hazard,control_hazard_pc,tempstate=ControlUnit.decode(val,btb)
+                    out_states.append(tempstate)
                 if idx==0:
-                    out_states.append(ControlUnit.fetch(val))
+                    outcome,new_pc,tempstate=ControlUnit.fetch(val)
+                    out_states.append(tempstate)
             out_states=out_states[::-1]
+            if out_states[0].IR!=0:
+                PC+=4
+            
 
     else:
         Simulator=State(0)
