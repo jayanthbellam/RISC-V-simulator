@@ -1,5 +1,4 @@
-
-class State:
+class ISB:
     def __init__(self,pc=0):
         self.operation=-1
         self.opcode=-1
