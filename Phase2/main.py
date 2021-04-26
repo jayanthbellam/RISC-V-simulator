@@ -41,6 +41,7 @@ else:
                     if i==1:
                         control_hazard,control_hazard_pc,tempstate=ComputerState.decode(in_states[1],btb)
                         out_states.append(tempstate)
+                      
                     if i==0:
                         control_change,control_change_pc,tempstate=ComputerState.fetch(in_states[0],btb)
                         out_states.append(tempstate)
