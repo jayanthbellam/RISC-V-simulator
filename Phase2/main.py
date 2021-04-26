@@ -10,7 +10,7 @@ else:
     PC=0
     clock=0
     pipelined_execution=True
-    data_forwarding=False
+    data_forwarding=True
     btb=BranchTargetBuffer()
     hazards=HAZ()
     if pipelined_execution:
@@ -66,8 +66,7 @@ else:
                 out_states=[]
                 ComputerState.store_State('pipelined_data_forwarding.txt')
                 input()
-            
-                
+              
         #if data is not forwarded we implement stalling
         else:
             while 1:
@@ -93,11 +92,14 @@ else:
                     PC=new_pc
                 if control_hazard and not data_hazards[0]:
                     PC=control_hazard_pc
-                    print(PC)
                     out_states[0]=State()
                 if data_hazards[0]:
-                    print('\n\ntrue\n\n')
-                    out_states=[in_states[1],State()]+out_states[2:]
+                    if data_hazards[1]==2:
+                        in_states=[in_states[0],in_states[1],in_states[2],State(),out_states[3]]
+                        continue
+                    else:
+                        in_states=[in_states[0],in_states[1],State(),out_states[2],out_states[3]]
+                        continue
                 if not (out_states[0].is_actual_instruction or out_states[1].is_actual_instruction or out_states[2].is_actual_instruction or out_states[3].is_actual_instruction):
                     break
                 in_states=[State(PC)]+out_states
