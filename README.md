@@ -29,21 +29,3 @@ README
         |- README.md
         |- design doc.docx
         
-       
-        
-### Note: Auipc instruction is assumed to be ALU instruction.
-      
-
-### How to execute: 
-Use the following command in cmd: 
-    python .\main.py .\test\file_name
-    
-----------
-Phase 1: Implemented all stages i.e. Fetch, Decode, Execute, Memory Access, Writeback
-
-Phase 2: Implemented pipeline structure with and without data forwarding
-
-
-Phase 3: 
-
- 
