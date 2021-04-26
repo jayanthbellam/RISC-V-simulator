@@ -1,6 +1,12 @@
 from Instruction import ISB,ControlUnit,BranchTargetBuffer
 import sys
 
+forwarding_vals = {}
+forwarding_vals['M2M'] = 0
+forwarding_vals['E2E'] = 0
+forwarding_vals['M2E'] = 0
+forwarding_vals['M2D'] = 0
+forwarding_vals['E2D'] = 0
 
 def data_hazard(state_):
     new_states=[state_[0]]
@@ -16,20 +22,29 @@ def data_hazard(state_):
     ex_opcode=ex.opcode
     me_opcode=me.opcode
     wb_opcode=wb.opcode
+
+    #M->M Forwarding
     if(wb_opcode==3 and me_opcode==35) and (wb.rd>0 and wb.rd==me.rs2):
             Hazard=True
             me.RB=wb.MDR
+            forwarding_vals['M2M'] = wb.MDR
             data_forwards+=1
-    if wb.rd >0:
+
+    #M->E Forwarding
+    if wb.rd > 0:
         if wb.rd==ex.rs1:
             ex.RA=wb.MDR
             Hazard=True
+            forwarding_vals['M2E'] = wb.MDR
             data_forwards+=1
         
         if wb.rd==ex.rs2:
             ex.RB=wb.MDR
             Hazard=True
+            forwarding_vals['M2E'] = wb.MDR
             data_forwards+=1
+
+    #E->E Forwarding
     if me.rd>0:
         if me_opcode==3:
             if ex_opcode==35:
@@ -47,23 +62,30 @@ def data_hazard(state_):
                 ex.RA=me.Alu_out
                 Hazard=True
                 data_forwards=True
+                forwarding_vals['E2E'] = me.Alu_out
             if (ex.rs2==me.rd):
                 ex.RB=me.Alu_out
                 Hazard=True
                 data_forwards+=1
-        
+                forwarding_vals['E2E'] = me.Alu_out
+  
     if (de_opcode==99 or de_opcode==103):
+        #M->D Forwarding 
         if wb.rd>0:
             if wb.rd==de.rs1:
                 de.branchRA=wb.MDR
                 Hazard=True
                 data_forwards+=1
+                forwarding_vals['M2D'] = wb.MDR
             if wb.rd==de.rs2:
                 de.branchRB=wb.MDR
                 Hazard=True
                 data_forwards+=1
+                forwarding_vals['M2D'] = wb.MDR
+        
+        #E->D Forwarding
         if me.rd>0 :
-            if me_opcode ==3:
+            if me_opcode == 3:
                 Hazard=True
                 stall=True
                 w_stall=min(w_stall,2)	
@@ -72,10 +94,12 @@ def data_hazard(state_):
                     de.branchRA=me.Alu_out
                     Hazard=True
                     data_forwards+=1
+                    forwarding_vals['E2D'] = me.Alu_out
                 if me.rd ==de.rs2 :
                     de.branchRB=me.Alu_out
                     Hazard=True
                     data_forwards+=1
+                    forwarding_vals['E2D'] = me.Alu_out
         if ex.rd > 0 and (ex.rd== de.rs1 or ex.rd ==de.rs2):
             Hazard=True
             stall=True
@@ -83,6 +107,7 @@ def data_hazard(state_):
  		   
     new_states= new_states + [de,ex,me,wb]
     return [Hazard,stall,new_states,w_stall,data_forwards]
+
 def check_data_haz_stall(states):
     de=states[2]
     ex=states[3]
@@ -106,14 +131,17 @@ else:
     ComputerState=ControlUnit(filename)
     PC=0
     clock=0
-    pipelined_execution=True
-    data_forwarding=True
+    knob1 = int(input("Enable(1)/Disable(0) pipelining: "))
+    knob3 = int(input("Enable(1)/Disable(0) printing the values in the register file at the end of each cycle: "))
+    knob4 = int(input("Enable(1)/Disable(0) printing information in the pipeline registers at the end of each cycle, along with cycle number. "))
+    knob5 = int(input("Enter the instruction number for printing its pipeline register information/[Disable(-1)]: "))
     btb=BranchTargetBuffer()
-    if pipelined_execution:
+    if knob1:
         in_states=[ISB() for i in range(5)]
         out_states=[]
         data_hazard_count=0
-        if data_forwarding:
+        knob2 = int(input("Enable(1)/Disable(0) data forwarding: "))
+        if knob2:
             while 1:
                 is_hazard=False
                 stall=False
@@ -124,16 +152,31 @@ else:
                         hazard=data_hazard(in_states)
                         in_states[3]=hazard[2][3]
                         data_hazard_count+=hazard[4]
+                        if knob5 != -1 and knob5 == in_states[1].PC:
+                            print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                                  format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
                     if i==3:
                         out_states.append(ComputerState.memory_access(in_states[3]))
+                        if knob5 != -1 and knob5 == in_states[3].PC:
+                            print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                                  format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
                     if i==2:
                         out_states.append(ComputerState.execute(in_states[2]))
+                        if knob5 != -1 and knob5 == in_states[2].PC:
+                            print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                                  format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
                     if i==1:
                         control_hazard,control_hazard_pc,tempstate=ComputerState.decode(in_states[1],btb)
                         out_states.append(tempstate)
+                        if knob5 != -1 and knob5 == in_states[1].PC:
+                            print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                                  format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D'])) 
                     if i==0:
                         control_change,control_change_pc,tempstate=ComputerState.fetch(in_states[0],btb)
                         out_states.append(tempstate)
+                        if knob5 != -1 and knob5 == in_states[0].PC:
+                            print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                                  format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
                     if i!=4:
                         hazard=data_hazard(in_states)
                         in_states=hazard[2]
@@ -204,9 +247,6 @@ else:
                 input()
 
 
-
-            
-
     else:
         Simulator=ISB(0)
         while 1:
@@ -219,3 +259,11 @@ else:
             Simulator=ComputerState.write_back(Simulator)
             input()
         ComputerState.store_State()
+
+    if knob4:
+        print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+            format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
+    if knob3:
+        print("Register file: {}".format(ComputerState.RegisterFile))
+    
+    
