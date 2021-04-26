@@ -17,16 +17,15 @@ README
       CS204-Project
         |
         |- phase 1
-             |-
-             |-
+             |-main.py
+             |-Simulator.py
         |- phase 2
              |-Instruction.py
              |-hazard.py
              |-main.py
         |     
         |- README.md
-        |- main.py
-        |- Simulator.py
+        |- design doc.docx
         |- simple_add.mc
         |- fibonacci.mc
         |- factorial.mc
