@@ -1,3 +1,6 @@
+from io import open_code
+
+
 class State:
     def __init__(self,pc=0):
         self.operation=-1
@@ -12,8 +15,10 @@ class State:
         self.RA=0
         self.RB=0
         self.MDR=0
-        self.Alu_out=0
+        self.Alu_out=-1
         self.is_actual_instruction=False
+        self.branchRA=-1
+        self.branchRB=-1
 
 class ControlUnit:
     def __init__(self,file_name):
@@ -81,6 +86,43 @@ class ControlUnit:
             state.PC_temp=state.PC+4
             state.is_actual_instruction=True
             print('Fetched the instruction '+str(hex(state.IR))+' and its PC is '+str(state.PC))
+            opcode=state.IR &(0x7F)
+            state.opcode=opcode
+            if opcode==99:
+                rs1=state.IR&(0xF8000)
+                rs1=rs1>>15
+                state.rs1=rs1
+                rs2=state.IR&(0x1F00000)
+                rs2=rs2>>20
+                state.rs2=rs2
+                func3=state.IR&(0x7000)
+                func3=func3>>12
+                temp=bin(state.IR).replace('0b','')
+                temp='0'*(32-len(temp))+temp
+                immediate=temp[0]+temp[-8]+temp[1:7]+temp[20:24]+'0'
+                state.imm=int(immediate,2)
+                if func3==0:
+                    state.operation='beq'
+                elif func3==1:
+                    state.operation='bne'
+                elif func3==5:
+                    state.operation='bge'
+                elif func3==4:
+                    state.operation='blt'
+            elif opcode==103:
+                rs1=state.IR&(0xF8000)
+                rs1=rs1>>15
+                state.rs1=rs1
+                imm=state.IR&(0xFFF00000)
+                imm=imm>>20
+                state.imm=imm
+                rd=state.IR&(0xF80)
+                rd=rd>>7
+                state.rd=rd
+                func3=state.IR&(0x7000)
+                func3=func3>>12
+                state.RA=self.RegisterFile[rs1] 
+                state.operation='jalr'                         
             if btb==0:
                 return state
             new_pc=0
@@ -88,10 +130,12 @@ class ControlUnit:
             if btb.targetBTB(state.PC)!=-1:
                 new_pc=btb.targetBTB(state.PC)
                 outcome=True
+                print('PC in BTB the next PC is '+str(new_pc))
             return  outcome,new_pc,state
         except IndexError:
             state.IR=0
             state.is_actual_instruction=False
+            print('------------------------')
             if btb==0:
                 return state
             return False,0,state
@@ -99,7 +143,9 @@ class ControlUnit:
     def decode(self,state,btb):
         control_hazard=False
         new_pc=0
+        state.Alu_out=-1
         if state.is_actual_instruction==False:
+            print('------------------------')
             return control_hazard, new_pc, state
         opcode=state.IR & (0x7F)
         state.opcode=opcode
@@ -150,7 +196,7 @@ class ControlUnit:
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Rd: '+str(state.rd))
         #I type instructions
-        elif opcode==19 or opcode==3 or opcode==103:
+        elif opcode==19 or opcode==3:
             rs1=state.IR&(0xF8000)
             rs1=rs1>>15
             state.rs1=rs1
@@ -177,21 +223,20 @@ class ControlUnit:
                     state.operation='lh'
                 elif func3==2:
                     state.operation='lw'
-            elif opcode==103 and func3==0:
-                temp=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
-                state.PC_temp=state.PC+temp
-                state.Alu_out=state.PC+4
-                print('Executed the operation '+ str(state.operation))
-                if btb!=0:
-                    if not btb.checkBTB(state.PC):
-                        btb.updateBTB(state.PC,state.PC_temp)
-                        self.branch_mispred+=1
-                        control_hazard=True
-                        new_pc=state.PC_temp
-                state.operation='jalr'
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Imm: '+str(self.twoscomplement(state.imm,12)))
             print('Rd: '+str(state.rd))
+        elif opcode==103:
+            temp=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
+            state.PC_temp=temp
+            state.Alu_out=state.PC+4
+            print('Executed the operation '+ str(state.operation))
+            if btb!=0:
+                if not btb.checkBTB(state.PC):
+                    btb.updateBTB(state.PC,state.PC_temp)
+                    self.branch_mispred+=1
+                    control_hazard=True
+                    new_pc=state.PC_temp
         elif opcode==35:
             rs1=state.IR&(0xF8000)
             rs1=rs1>>15
@@ -216,30 +261,11 @@ class ControlUnit:
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Imm: '+str(state.imm))
         elif opcode==99:
-            rs1=state.IR&(0xF8000)
-            rs1=rs1>>15
-            state.rs1=rs1
-            rs2=state.IR&(0x1F00000)
-            rs2=rs2>>20
-            state.rs2=rs2
-            func3=state.IR&(0x7000)
-            func3=func3>>12
-            temp=bin(state.IR).replace('0b','')
-            temp='0'*(32-len(temp))+temp
-            immediate=temp[0]+temp[-8]+temp[1:7]+temp[20:24]+'0'
-            state.imm=int(immediate,2)
-            if func3==0:
-                state.operation='beq'
-            elif func3==1:
-                state.operation='bne'
-            elif func3==5:
-                state.operation='bge'
-            elif func3==4:
-                state.operation='blt'
+            state.RA=self.RegisterFile[state.rs1] if state.branchRA!=-1 else state.branchRA
+            state.RB=self.RegisterFile[state.rs1] if state.branchRB!=-1 else state.branchRB
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Imm: '+str(self.twoscomplement(state.imm,12)))
-
             if state.operation=='beq':
                 if self.RegisterFile[state.rs1]==self.RegisterFile[state.rs2]:
                     state.PC_temp=state.PC+self.twoscomplement(state.imm,12)
@@ -264,25 +290,21 @@ class ControlUnit:
                     state.Alu_out=1
                 else:
                     state.Alu_out=0
-            print('The value in Rs1: '+str(state.rs1)+' The value in Rs2: '+str(state.rs2)+'The branch is '+str(state.Alu_out))
+            print('The value in Rs1: '+str(self.RegisterFile[state.rs1])+' The value in Rs2: '+str(self.RegisterFile[state.rs2])+'The branch is '+str(state.Alu_out))
             if btb!=0:
                 if self.twoscomplement(state.imm,12)<0:
-                    print('Predicted the branch is Taken')
                     if not btb.checkBTB(state.PC):
-                        print('Came here')
                         btb.updateBTB(state.PC,state.PC_temp)
                         if state.Alu_out==1:
                             self.branch_mispred+=1
                             control_hazard=True
                             new_pc=state.PC_temp
                     else:
-                        print('Came here2')
                         if state.Alu_out==0:
                             self.branch_mispred+=1
                             control_hazard=True
                             new_pc=state.PC_temp
                 else:
-                    print('Predicted the branch is not Taken')
                     if state.Alu_out==1:
                         self.branch_mispred+=1
                         control_hazard=True
@@ -337,6 +359,7 @@ class ControlUnit:
     
     def execute(self,state):
         if state.is_actual_instruction==False:
+            print('------------------------')
             return state
         if state.opcode==51:
             if state.operation=='add':
@@ -391,6 +414,8 @@ class ControlUnit:
                 state.Alu_out=self.twoscomplement(state.RA,32)|self.twoscomplement(state.imm,12)
             elif state.operation in ['lb','lw','lh']:
                 state.Alu_out=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
+            print('Executed the operation '+ str(state.operation))
+            print('Value in Rs1: '+str(self.twoscomplement(state.RA,32))+' IMM: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
         if state.operation in ['sb','sh','sw']:
             state.Alu_out=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
         elif state.operation=='auipc':
@@ -406,6 +431,7 @@ class ControlUnit:
     
     def memory_access(self,state):
         if state.is_actual_instruction==False:
+            print('------------------------')
             return state
         if state.operation=='lb':
             val=0
@@ -455,12 +481,16 @@ class ControlUnit:
                 self.MEM[adr]=d_in
                 adr=adr+1
             print('Successfully stored the vlaue '+str(data)+' to the memory location '+str(state.Alu_out))
+        else:
+            print('No Memory Accessed')
         return state
 
     def write_back(self,state):
         if state.is_actual_instruction==False:
+            print('------------------------')
             return state
         if state.rd==0:
+            print('Nothing writen back')
             return state
         if state.operation in ['add','and','or','sll','slt','sra','srl','sub','xor','mul','div','rem','addi','andi','ori']:
             self.RegisterFile[state.rd]=state.Alu_out
@@ -471,6 +501,8 @@ class ControlUnit:
         elif state.operation in ['jalr','jal','lui','auipc']:
             print('Wrote the value '+str(state.Alu_out)+' to the register x'+str(state.rd))
             self.RegisterFile[state.rd]=state.Alu_out
+        else:
+            print('Nothing writen back')
         return state
 
 class BranchTargetBuffer:
