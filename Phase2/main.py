@@ -1,4 +1,4 @@
-from Instruction import State,ControlUnit,BranchTargetBuffer
+from Instruction import ISB,ControlUnit,BranchTargetBuffer
 import sys
 
 def data_hazard(state_):
@@ -86,19 +86,16 @@ def check_data_haz_stall(states):
     de=states[2]
     ex=states[3]
     me=states[4]
-    if 	ex.is_actual_instruction and de.is_actual_instruction:
-        if ex.rd>0:
-            print(de.rs1,de.rs2)
-            if ex.rd==de.rs1:
-                return [True,2]
-            if ex.rd==de.rs2:
-                return [True,2]
-    if me.is_actual_instruction and de.is_actual_instruction:
-        if me.rd>0:
-            if me.rd==de.rs1:
-                return [True,1]
-            if me.rd==de.rs2:
-                return [True,1]
+    if 	ex.is_actual_instruction and de.is_actual_instruction and ex.rd>0:
+        if ex.rd==de.rs1:
+            return [True,2]
+        if ex.rd==de.rs2:
+            return [True,2]
+    if me.is_actual_instruction and de.is_actual_instruction and me.rd>0:
+        if me.rd==de.rs1:
+            return [True,1]
+        if me.rd==de.rs2:
+            return [True,1]
     return [False,-1]
 
 if len(sys.argv)<2:
@@ -108,11 +105,11 @@ else:
     ComputerState=ControlUnit(filename)
     PC=0
     clock=0
-    pipelined_execution=False
-    data_forwarding=False
+    pipelined_execution=True
+    data_forwarding=True
     btb=BranchTargetBuffer()
     if pipelined_execution:
-        in_states=[State() for i in range(5)]
+        in_states=[ISB() for i in range(5)]
         out_states=[]
         data_hazard_count=0
         if data_forwarding:
@@ -151,16 +148,16 @@ else:
                     PC=control_change_pc
                 if control_hazard and stall==False:
                     PC=control_hazard_pc
-                    out_states[0]=State(0)
+                    out_states[0]=ISB(0)
                 if stall:
                     print('\n\nSTALLING\n\n')
                     if w_stall==1:
-                        out_states=[in_states[1],in_states[2],State(),out_states[3]]
+                        out_states=[in_states[1],in_states[2],ISB(),out_states[3]]
                     else:
-                        out_states=[in_states[1],State(),out_states[2],out_states[3]]
+                        out_states=[in_states[1],ISB(),out_states[2],out_states[3]]
                 if not (out_states[0].is_actual_instruction or out_states[1].is_actual_instruction or out_states[2].is_actual_instruction or out_states[3].is_actual_instruction):
                         break
-                in_states=[State(PC)]+out_states
+                in_states=[ISB(PC)]+out_states
                 out_states=[]
                 ComputerState.store_State('pipelined_data_forwarding.txt')
                 input()
@@ -190,17 +187,17 @@ else:
                     PC=new_pc
                 if control_hazard and not data_hazards[0]:
                     PC=control_hazard_pc
-                    out_states[0]=State()
+                    out_states[0]=ISB()
                 if data_hazards[0]:
                     if data_hazards[1]==2:
-                        in_states=[in_states[0],in_states[1],in_states[2],State(),out_states[3]]
+                        in_states=[in_states[0],in_states[1],in_states[2],ISB(),out_states[3]]
                         continue
                     else:
-                        in_states=[in_states[0],in_states[1],State(),out_states[2],out_states[3]]
+                        in_states=[in_states[0],in_states[1],ISB(),out_states[2],out_states[3]]
                         continue
                 if not (out_states[0].is_actual_instruction or out_states[1].is_actual_instruction or out_states[2].is_actual_instruction or out_states[3].is_actual_instruction):
                     break
-                in_states=[State(PC)]+out_states
+                in_states=[ISB(PC)]+out_states
                 out_states=[]
                 ComputerState.store_State('pipelined_not_data_forwarding.txt')
                 input()
@@ -210,7 +207,7 @@ else:
             
 
     else:
-        Simulator=State(0)
+        Simulator=ISB(0)
         while 1:
             Simulator=ComputerState.fetch(Simulator,0)
             if not Simulator.is_actual_instruction:
