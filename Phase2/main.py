@@ -1,6 +1,7 @@
 from Instruction import ISB,ControlUnit,BranchTargetBuffer
 import sys
 
+
 def data_hazard(state_):
     new_states=[state_[0]]
     data_forwards= 0
