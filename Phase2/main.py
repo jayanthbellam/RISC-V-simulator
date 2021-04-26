@@ -1,5 +1,4 @@
 from Instruction import State,ControlUnit,BranchTargetBuffer
-from Hazard import HAZ
 import sys
 
 if len(sys.argv)<2:
