@@ -8,14 +8,14 @@ class HAZ:
         self.M2D=0
     
     def data_hazard(self,state_):
-        new_states=[]
-        data_forwards= set()
+        new_states=[state_[0]]
+        data_forwards= 0
         de=state_[1]
         ex=state_[2]
         me=state_[3]
         wb=state_[4]
-        Hazard =0     #  0/1
-        stall=0    #0 / 1
+        Hazard =False     #  0/1
+        stall=False    #0 / 1
         w_stall=3
         de_opcode=de.opcode
         ex_opcode=ex.opcode
@@ -24,101 +24,99 @@ class HAZ:
 	 
 	    #m2m       3 for load 35 is store
         if(wb_opcode==3 and me_opcode==35) and (wb.rd>0 and wb.rd==me.rs2):
-                Hazard=1
+                Hazard=True
                 me.RB=wb.MDR
                 self.M2M=wb.MDR
-                data_forwards.add("M2M")
+                data_forwards=1
 	
 	    #m2e     load 
         if wb.rd >0:
             if wb.rd==ex.rs1:
                 ex.RA=wb.MDR
-                Hazard=1
+                Hazard=True
                 self.M2E=wb.MDR
-                data_forwards.add("M2E")
+                data_forwards=1
             
             if wb.rd==ex.rs2:
                 ex.RB=wb.MDR
-                Hazard=1
+                Hazard=True
                 self.M2E=wb.MDR
-                data_forwards.add("M2E")
+                data_forwards=1
 
 		 
  	        #e2e
-            if me.rd>0:
-                if me_opcode==3:
-                    if ex_opcode==35:
-                        if ex.rs1==me.rd:
-                            Hazard=1
-                            stall=1
-                            w_stall=min(w_stall,1)
-                    else:
-                        Hazard=1
-                        stall=1
+        if me.rd>0:
+            if me_opcode==3:
+                if ex_opcode==35:
+                    if ex.rs1==me.rd:
+                        Hazard=True
+                        stall=True
                         w_stall=min(w_stall,1)
-			 
                 else:
-                    if (ex.rs1==me.rd):
-                        ex.RA=me.ALU_out
-                        self.E2E=me.ALU_out
-                        Hazard=1
-                        data_forwards.add("E2E")
-
-                    if (ex.rs2==me.rd):
-                        ex.RB=me.ALU_out
-                        self.E2E=me.ALU_out
-                        Hazard=1
-                        data_forwards.add("E2E")
-            
-            if (de_opcode==99 or de_opcode==103):
-                #M2D
-                if wb.rd>0:
-                    if wb.rd==de.rs1:
-                        de.rs1=wb.MDR
-                        self.M2D=wb.MDR
-                        Hazard=1
-                        data_forwards.add("M2D")
-                    if wb.rd==de.rs2:
-                        de.rs2=wb.MDR
-                        Hazard=1
-                        self.M2D=wb.MDR
-                        data_forwards.add("M2D")
-	        #E2D
-                if me.rd>0 :
-                    if me_opcode ==3:
-                        Hazard=1
-                        stall=1
-                        w_stall=min(w_stall,2)	
-                    else:
-                        if me.rd==de.rs1:
-                            de.rs1=me.ALU_out
-                            self.E2D=me.ALU_out
-                            Hazard=1
-                            data_forwards.add("E2D")
+                    Hazard=True
+                    stall=True
+                    w_stall=min(w_stall,1)
 			 
-                        if me.rd ==de.rs2 :
-                            de.rs2=me.ALU_out
-                            self.E2D=me.ALU_out
-                            Hazard=1
-                            data_forwards.add("E2D")
+            else:
+                if (ex.rs1==me.rd):
+                    ex.RA=me.Alu_out
+                    self.E2E=me.Alu_out
+                    Hazard=True
+                    data_forwards=True
+                if (ex.rs2==me.rd):
+                    ex.RB=me.Alu_out
+                    self.E2E=me.Alu_out
+                    Hazard=True
+                    data_forwards=1
+            
+        if (de_opcode==99 or de_opcode==103):
+                #M2D
+            if wb.rd>0:
+                if wb.rd==de.rs1:
+                    de.branchRA=wb.MDR
+                    self.M2D=wb.MDR
+                    Hazard=True
+                    data_forwards=1
+                if wb.rd==de.rs2:
+                    de.branchRB=wb.MDR
+                    Hazard=True
+                    self.M2D=wb.MDR
+                    data_forwards=1
+	        #E2D
+            if me.rd>0 :
+                if me_opcode ==3:
+                    Hazard=True
+                    stall=True
+                    w_stall=min(w_stall,2)	
+                else:
+                    if me.rd==de.rs1:
+                        de.branchRA=me.Alu_out
+                        self.E2D=me.Alu_out
+                        Hazard=True
+                        data_forwards=1
+			
+                    if me.rd ==de.rs2 :
+                        de.branchRB=me.Alu_out
+                        self.E2D=me.Alu_out
+                        Hazard=True
+                        data_forwards=1
 	
-                if ex.rd > 0 and (ex.rd== de.rs1 or ex.rd ==de.rs2):
-                    Hazard=1
-                    stall=1
-                    w_stall=min(w_stall,2)
+            if ex.rd > 0 and (ex.rd== de.rs1 or ex.rd ==de.rs2):
+                Hazard=True
+                stall=True
+                w_stall=min(w_stall,2)
 	    		   
         new_states= new_states + [de,ex,me,wb]
         return [Hazard,stall,new_states,w_stall,data_forwards]
 
     def check_data_haz_stall(self,states):
-        de=states[1]
         fe=states[0]
+        de=states[1]
         ex=states[2]
         me=states[3]
-        if (ex.rd!=-1 and de.rs1!=-1) and (ex.is_actual_instruction!=False and de.is_actaul_instruction!=False): 
-            if ex.rd == de.rs1 :
-                if ex.rd!=0 :
-                    return [True,2]
+        if (ex.rd!=-1 and de.rs1!=-1) and (ex.is_actual_instruction!=False and de.is_actual_instruction!=False): 
+            if ex.rd == de.rs1 and ex.rd!=0 :
+                return [True,2]
                 
             if ex.rd==de.rs2:
                 if ex.rd!=0:
