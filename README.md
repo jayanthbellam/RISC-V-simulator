@@ -31,7 +31,7 @@ README
         
        
         
-
+### Note: Auipc instruction is assumed to be ALU instruction.
       
 
 ### How to execute: 
