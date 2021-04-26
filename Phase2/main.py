@@ -1,4 +1,4 @@
-from Instruction import ISB,ControlUnit,BranchTargetBuffer
+from Simulator import ISB,ControlUnit,BranchTargetBuffer
 import sys
 
 forwarding_vals = {}
@@ -194,7 +194,6 @@ else:
                     PC=control_hazard_pc
                     out_states[0]=ISB(0)
                 if stall:
-                    print('\n\nSTALLING\n\n')
                     if w_stall==1:
                         out_states=[in_states[1],in_states[2],ISB(),out_states[3]]
                     else:
@@ -203,9 +202,13 @@ else:
                         break
                 in_states=[ISB(PC)]+out_states
                 out_states=[]
-                ComputerState.store_State('pipelined_data_forwarding.txt')
-                input()
-              
+                if knob4:
+                    print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                    format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
+                if knob3:
+                    print("Register file: {}".format(ComputerState.RegisterFile))
+            ComputerState.store_State('pipelined_data_forwarding.txt')
+             
         #if data is not forwarded we implement stalling
         else:
             while 1:
@@ -243,8 +246,12 @@ else:
                     break
                 in_states=[ISB(PC)]+out_states
                 out_states=[]
-                ComputerState.store_State('pipelined_not_data_forwarding.txt')
-                input()
+                if knob4:
+                    print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
+                    format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
+                if knob3:
+                    print("Register file: {}".format(ComputerState.RegisterFile))
+        ComputerState.store_State('pipelined_not_data_forwarding.txt')
 
 
     else:
@@ -257,13 +264,6 @@ else:
             Simulator=ComputerState.execute(Simulator)
             Simulator=ComputerState.memory_access(Simulator)
             Simulator=ComputerState.write_back(Simulator)
-            input()
+            if knob3:
+                print("Register file: {}".format(ComputerState.RegisterFile))
         ComputerState.store_State()
-
-    if knob4:
-        print("M->M Forwarding: {0}, M->E Forwarding: {1}, M->D Forwarding: {2}, \nE->E Forwarding: {3}, E->D Forwarding: {4}".
-            format(forwarding_vals['M2M'], forwarding_vals['M2E'], forwarding_vals['M2D'], forwarding_vals['E2E'], forwarding_vals['E2D']))
-    if knob3:
-        print("Register file: {}".format(ComputerState.RegisterFile))
-    
-    
