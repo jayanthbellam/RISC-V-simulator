@@ -1,5 +1,3 @@
-from io import open_code
-
 
 class State:
     def __init__(self,pc=0):
@@ -21,6 +19,7 @@ class State:
         self.branchRB=-1
 
 class ControlUnit:
+
     def __init__(self,file_name):
         self.MEM={}
         self.MachineCode=[]
@@ -190,8 +189,6 @@ class ControlUnit:
                 state.operation='rem'
             else:
                 print("INVALID OPERATION")
-            state.RA=self.RegisterFile[rs1]
-            state.RB=self.RegisterFile[rs2]
             print('The operation is',state.operation)
             print('Rs1: '+str(state.rs1)+' Rs2: '+str(state.rs2))
             print('Rd: '+str(state.rd))
@@ -208,7 +205,6 @@ class ControlUnit:
             state.rd=rd
             func3=state.IR&(0x7000)
             func3=func3>>12
-            state.RA=self.RegisterFile[rs1]
             if opcode==19:
                 if func3==0:
                     state.operation='addi'
@@ -362,6 +358,8 @@ class ControlUnit:
             print('------------------------')
             return state
         if state.opcode==51:
+            state.RA=self.RegisterFile[state.rs1]
+            state.RB=self.RegisterFile[state.rs2]
             if state.operation=='add':
                 state.Alu_out=self.twoscomplement(state.RA,32)+self.twoscomplement(state.RB,32)
             elif state.operation=='and':
@@ -406,6 +404,7 @@ class ControlUnit:
             print('Executed the operation '+ str(state.operation))
             print('Value in Rs1: '+str(self.twoscomplement(state.RA,32))+' Rs2: '+str(self.twoscomplement(state.RB,32))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
         if state.opcode in [19,3,103]:
+            state.RA=self.RegisterFile[state.rs1]
             if state.operation=='addi':
                 state.Alu_out=self.twoscomplement(state.RA,32)+self.twoscomplement(state.imm,12)
             elif state.operation=='andi':
@@ -417,7 +416,8 @@ class ControlUnit:
             print('Executed the operation '+ str(state.operation))
             print('Value in Rs1: '+str(self.twoscomplement(state.RA,32))+' IMM: '+str(self.twoscomplement(state.imm,12))+' The result is: '+str(self.twoscomplement(state.Alu_out,32)))
         if state.operation in ['sb','sh','sw']:
-            state.Alu_out=self.RegisterFile[state.rs1]+self.twoscomplement(state.imm,12)
+            state.RA=self.RegisterFile[state.rs1]
+            state.Alu_out=state.RA+self.twoscomplement(state.imm,12)
         elif state.operation=='auipc':
             state.Alu_out=state.PC+self.twoscomplement(state.imm,32)
             print('Executed the operation '+ str(state.operation))
