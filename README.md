@@ -42,13 +42,6 @@ Phase 1: Implemented all stages i.e. Fetch, Decode, Execute, Memory Access, Writ
 Phase 2: Implemented pipeline structure with and without data forwarding
 
 
-Phase 3:
-
-## Contributons
- Bellam Jayanth -   <br />
- Sagina Jaya Govinda Venkata Sai Teja -   <br />
- Rohit Dagar -   <br />
- Satia -    <br />
- Keshav Goyal -  
+Phase 3: 
 
  
