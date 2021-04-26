@@ -1,4 +1,4 @@
-from Instruction import State,ControlUnit,BranchTargetBuffer
+from Instruction import State,ControlUnit
 class HAZ:
     def __init__(self):
         self.E2E=0
@@ -27,7 +27,7 @@ class HAZ:
                 Hazard=True
                 me.RB=wb.MDR
                 self.M2M=wb.MDR
-                data_forwards=1
+                data_forwards+=1
 	
 	    #m2e     load 
         if wb.rd >0:
@@ -35,13 +35,13 @@ class HAZ:
                 ex.RA=wb.MDR
                 Hazard=True
                 self.M2E=wb.MDR
-                data_forwards=1
+                data_forwards+=1
             
             if wb.rd==ex.rs2:
                 ex.RB=wb.MDR
                 Hazard=True
                 self.M2E=wb.MDR
-                data_forwards=1
+                data_forwards+=1
 
 		 
  	        #e2e
@@ -67,7 +67,7 @@ class HAZ:
                     ex.RB=me.Alu_out
                     self.E2E=me.Alu_out
                     Hazard=True
-                    data_forwards=1
+                    data_forwards+=1
             
         if (de_opcode==99 or de_opcode==103):
                 #M2D
@@ -76,12 +76,12 @@ class HAZ:
                     de.branchRA=wb.MDR
                     self.M2D=wb.MDR
                     Hazard=True
-                    data_forwards=1
+                    data_forwards+=1
                 if wb.rd==de.rs2:
                     de.branchRB=wb.MDR
                     Hazard=True
                     self.M2D=wb.MDR
-                    data_forwards=1
+                    data_forwards+=1
 	        #E2D
             if me.rd>0 :
                 if me_opcode ==3:
@@ -93,13 +93,13 @@ class HAZ:
                         de.branchRA=me.Alu_out
                         self.E2D=me.Alu_out
                         Hazard=True
-                        data_forwards=1
+                        data_forwards+=1
 			
                     if me.rd ==de.rs2 :
                         de.branchRB=me.Alu_out
                         self.E2D=me.Alu_out
                         Hazard=True
-                        data_forwards=1
+                        data_forwards+=1
 	
             if ex.rd > 0 and (ex.rd== de.rs1 or ex.rd ==de.rs2):
                 Hazard=True
@@ -110,24 +110,20 @@ class HAZ:
         return [Hazard,stall,new_states,w_stall,data_forwards]
 
     def check_data_haz_stall(self,states):
-        fe=states[0]
-        de=states[1]
-        ex=states[2]
-        me=states[3]
-        if (ex.rd!=-1 and de.rs1!=-1) and (ex.is_actual_instruction!=False and de.is_actual_instruction!=False): 
-            if ex.rd == de.rs1 and ex.rd!=0 :
-                return [True,2]
-                
-            if ex.rd==de.rs2:
-                if ex.rd!=0:
+        de=states[2]
+        ex=states[3]
+        me=states[4]
+        if 	ex.is_actual_instruction and de.is_actual_instruction:
+            if ex.rd>0:
+                print(de.rs1,de.rs2)
+                if ex.rd==de.rs1:
                     return [True,2]
-	            
-        if (me.rd!=-1 and de.rs1!=-1) and (me.is_actual_instruction!=False and de.is_actual_instruction!=False):
-            if me.rd == de.rs1:
-                if me.rd!=0 :
+                if ex.rd==de.rs2:
+                    return [True,2]
+        if me.is_actual_instruction and de.is_actual_instruction:
+            if me.rd>0:
+                if me.rd==de.rs1:
                     return [True,1]
-            
-            if me.rd==de.rs2:
-                if me.rd!=0:
-                    return [True,1]	
+                if me.rd==de.rs2:
+                    return [True,1]
         return [False,-1]
