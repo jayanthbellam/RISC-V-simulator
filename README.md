@@ -17,12 +17,12 @@ README
       CS204-Project
         |
         |- phase 1
-             |-main.py
-             |-Simulator.py
+             |- Simulator.py
+             |- main.py
         |- phase 2
-             |-Instruction.py
-             |-hazard.py
-             |-main.py
+             |- Instruction.py
+             |- hazard.py
+             |- main.py
         |     
         |- README.md
         |- design doc.docx
