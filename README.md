@@ -17,8 +17,11 @@ README
       CS204-Project
         |
         |- phase 1
+             |- factorial.mc
+             |- fibonacci.mc
              |- Simulator.py
              |- main.py
+             |- simple_add.mc
         |- phase 2
              |- Instruction.py
              |- hazard.py
@@ -26,9 +29,9 @@ README
         |     
         |- README.md
         |- design doc.docx
-        |- simple_add.mc
-        |- fibonacci.mc
-        |- factorial.mc
+        
+       
+        
 
       
 
