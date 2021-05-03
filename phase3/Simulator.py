@@ -7,7 +7,7 @@ class Cache:
         self.cache_block_size=cache_block_size
         self.no_of_ways=no_of_ways
         self.blocks=cache_block_size//cache_size
-        self.array=[[[0,0]*no_of_ways]*self.blocks] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
+        self.array=[[[-1,-1]*no_of_ways]*self.blocks] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
     
     def search(self,address):
         self.access+=1
