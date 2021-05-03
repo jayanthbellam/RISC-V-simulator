@@ -7,22 +7,25 @@ class Cache:
         self.cache_block_size=cache_block_size
         self.no_of_ways=no_of_ways
         self.blocks=cache_block_size//cache_size
-        self.array=[[[-1,-1]*no_of_ways]*blocks] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
+        self.array=[[[0,0]*no_of_ways]*self.blocks] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
     
-    def search(self,address,MEM):
+    def search(self,address):
         self.access+=1
         block=address%(self.blocks)
         block=self.array[block]
         for i in block:
             if i[0]==address:
                 self.hits+=1
-                block.array.remove(i)
-                block.insert(0,i)
+                self.array.remove(i)
+                self.array.insert(0,i)
                 return i[1]
         self.miss+=1
+        return 'Not Found'
+    
+    def write(self,address,data):
+        block=address%(self.blocks)
         block.pop()
-        block.insert(0,[address,MEM[address]])
-		return MEM[address]
+        block.append([address,data])
         
 class ISB:
     def __init__(self,pc=0):
@@ -47,7 +50,7 @@ class ControlUnit:
 
     def __init__(self,file_name):
         self.MEM={}
-        self.MachineCode=[]
+        self.MachineCode={}
         self.RegisterFile=[0 for i in range(32)]
         self.RegisterFile[2]=int('0x7FFFFFF0',16)
         self.RegisterFile[3]=int('0x10000000',16)
@@ -66,8 +69,9 @@ class ControlUnit:
             inst=File.readline()
             try:
                 _,inst=inst.split()
+                _=int(_,16)
                 inst=int(inst,16)
-                self.MachineCode.append(inst)
+                self.MachineCode[_]=inst
             except ValueError:
                 break
         while True:
@@ -108,7 +112,7 @@ class ControlUnit:
 
     def fetch(self,state,btb):
         try:
-            state.IR=self.MachineCode[state.PC//4]
+            state.IR=self.MachineCode[state.PC]
             state.PC_temp=state.PC+4
             state.is_actual_instruction=True
             opcode=state.IR &(0x7F)
@@ -156,7 +160,7 @@ class ControlUnit:
                 new_pc=btb.targetBTB(state.PC)
                 outcome=True
             return  outcome,new_pc,state
-        except IndexError:
+        except KeyError:
             state.IR=0
             state.is_actual_instruction=False
             if btb==0:
