@@ -22,6 +22,7 @@ class Cache:
         self.miss+=1
         block.pop()
         block.insert(0,[address,MEM[address]])
+		return MEM[address]
         
 class ISB:
     def __init__(self,pc=0):
