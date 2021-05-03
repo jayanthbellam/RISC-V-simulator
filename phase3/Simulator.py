@@ -16,6 +16,8 @@ class Cache:
         for i in block:
             if i[0]==address:
                 self.hits+=1
+                block.array.remove(i)
+                block.insert(0,i)
                 return i[1]
         self.miss+=1
         block.pop()
