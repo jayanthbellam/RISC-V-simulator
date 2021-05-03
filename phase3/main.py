@@ -119,7 +119,6 @@ if len(sys.argv)<2:
 else:
     filename=sys.argv[1]
     ComputerState=ControlUnit(filename)
-    print(ComputerState.MachineCode)
     PC=0
     count_data_hazard=0
     count_stall=0
