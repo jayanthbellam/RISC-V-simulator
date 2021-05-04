@@ -4,28 +4,48 @@ class Cache:
         self.hits=0
         self.miss=0
         self.cache_size=cache_size
-        self.cache_block_size=cache_block_size
+        self.block_size=cache_block_size
         self.no_of_ways=no_of_ways
-        self.blocks=cache_block_size//cache_size
-        self.array=[[[-1,-1]*no_of_ways]*self.blocks] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
+        self.blocks=cache_size//self.block_size
+        self.sets=self.blocks//self.no_of_ways
+        self.divide()
+        self.array=[[[[-1,-1]]*self.no_of_ways]*self.sets] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
     
+    def log2(self,number):
+        k=-1
+        while number:
+            k+=1
+            number=number//2
+        return k
+    def divide(self):
+        self.block_offset=self.log2(self.block_size)
+        self.index=self.log2(self.sets)
+        self.tag=32-self.block_offset-self.index
     def search(self,address):
         self.access+=1
-        block=address%(self.blocks)
-        block=self.array[block]
-        for i in block:
-            if i[0]==address:
-                self.hits+=1
-                self.array.remove(i)
-                self.array.insert(0,i)
-                return i[1]
+        Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)
+        Index=address&int('1'*self.index+'0'*self.block_offset,2)
+        Block_Offset=address&int('1'*self.block_offset,2)
+        temp_set=self.array[Index]
+        block=-1
+        for i in temp_set:
+            if i[0]==Tag:
+                block=i[1]
+                break
+        if block!=-1:
+            self.hits+=1
+            temp_set.remove(i)
+            temp_set.insert(0,i)
+            return block[Block_Offset]
         self.miss+=1
-        return 'Not Found'
+        return False
     
-    def write(self,address,data):
-        block=address%(self.blocks)
-        block.pop()
-        block.append([address,data])
+    def write(self,address,block):   #should be only called if the search function returns false
+        Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)
+        Index=address&int('1'*self.index+'0'*self.block_offset,2)
+        temp_set=self.array[Index]
+        temp_set.pop()
+        temp_set.insert(Tag,block)
         
 class ISB:
     def __init__(self,pc=0):
