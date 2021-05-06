@@ -9,7 +9,13 @@ class Cache:
         self.blocks=cache_size//self.block_size
         self.sets=self.blocks//self.no_of_ways
         self.divide()
-        self.array=[[[[-1,-1]]*self.no_of_ways]*self.sets] #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
+        array=[]
+        for i in range(self.sets):  #Cache.array[i][0]->Tag Array Cache.array[i][1]->Data Array
+            temp=[]
+            for i in range(no_of_ways):
+                temp.append([-1,-1])
+            array.append(temp)
+        self.array=array
     
     def log2(self,number):
         k=-1
@@ -17,14 +23,17 @@ class Cache:
             k+=1
             number=number//2
         return k
+
     def divide(self):
         self.block_offset=self.log2(self.block_size)
         self.index=self.log2(self.sets)
         self.tag=32-self.block_offset-self.index
+    
     def search(self,address):
         self.access+=1
-        Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)
-        Index=address&int('1'*self.index+'0'*self.block_offset,2)
+        address=address//4
+        Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)>>(self.block_offset+self.index)
+        Index=(address&int('1'*self.index+'0'*self.block_offset,2))>>(self.block_offset)
         Block_Offset=address&int('1'*self.block_offset,2)
         temp_set=self.array[Index]
         block=-1
@@ -40,13 +49,17 @@ class Cache:
         self.miss+=1
         return False
     
-    def write(self,address,block):   #should be only called if the search function returns false
+    def write(self,address,Mem,offset):   #should be only called if the search function returns false
         Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)
         Index=address&int('1'*self.index+'0'*self.block_offset,2)
-        temp_set=self.array[Index]
-        temp_set.pop()
-        temp_set.insert(Tag,block)
-        
+        Block_address=Tag+Index
+        block=[]
+        for i in range(self.block_size):
+            block.append(Mem[Block_address+i*offset])
+        Tag=Tag>>(self.block_offset+self.index)
+        Index=Index>>(self.block_offset)
+        self.array[Index].pop()
+        self.array[Index].insert(0,[Tag,block])
 class ISB:
     def __init__(self,pc=0):
         self.operation=-1
@@ -68,7 +81,7 @@ class ISB:
 
 class ControlUnit:
 
-    def __init__(self,file_name):
+    def __init__(self,file_name,cahce_size,cache_block_size,no_of_ways):
         self.MEM={}
         self.MachineCode={}
         self.RegisterFile=[0 for i in range(32)]
@@ -82,6 +95,8 @@ class ControlUnit:
         self.stalls=0
         self.branch_mispred=0
         self._program_memory(file_name)
+        self.InstructionCache=Cache(cahce_size,cache_block_size,no_of_ways)
+        self.memoryCache=Cache(cahce_size,cache_block_size,no_of_ways)
 
     def _program_memory(self,file_name):
         File=open(file_name)
@@ -132,7 +147,15 @@ class ControlUnit:
 
     def fetch(self,state,btb):
         try:
-            state.IR=self.MachineCode[state.PC]
+            #state.IR=self.MachineCode[state.PC]
+            IR_temp=self.InstructionCache.search(state.PC)
+            if IR_temp:
+                state.IR=IR_temp
+                print('hit')
+            else:
+                print('miss')
+                state.IR=self.MachineCode[state.PC]
+                self.InstructionCache.write(state.PC,self.MachineCode,4)
             state.PC_temp=state.PC+4
             state.is_actual_instruction=True
             opcode=state.IR &(0x7F)
