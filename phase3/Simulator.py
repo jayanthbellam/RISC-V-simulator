@@ -48,9 +48,9 @@ class Cache:
             self.hits+=1
             temp_set.remove(i)
             temp_set.insert(0,i)
-            return block[Block_Offset]
+            return [True,block[Block_Offset]]
         self.miss+=1
-        return False
+        return [False,0]
     
     def write(self,address,Mem,offset):   #should be only called if the search function returns false
         address=address//offset
@@ -67,7 +67,6 @@ class Cache:
         Index=Index>>(self.block_offset)
         self.array[Index].pop()
         self.array[Index].insert(0,[Tag,block])
-
 
 class ISB:
     def __init__(self,pc=0):
@@ -158,8 +157,8 @@ class ControlUnit:
         val=0
         for i in range(ra):
             adr=state.Alu_out+i
-            temp_val=self.memoryCache.search(adr,1)
-            if temp_val:
+            result,temp_val=self.memoryCache.search(adr,1)
+            if result:
                 val+=temp_val*(1<<(8*i))
             else:
                 self.memoryCache.write(adr,self.MEM,1)
@@ -175,12 +174,12 @@ class ControlUnit:
             adr=adr+1
 
     def fetch(self,state,btb):
-        IR_temp=self.InstructionCache.search(state.PC,4)
-        if IR_temp:
+        result,IR_temp=self.InstructionCache.search(state.PC,4)
+        if result:
             state.IR=IR_temp
         else:
             self.InstructionCache.write(state.PC,self.MachineCode,4)
-            state.IR=self.InstructionCache.search(state.PC,4)
+            result,state.IR=self.InstructionCache.search(state.PC,4)
         if state.IR==0:
             state.is_actual_instruction=False
             if btb==0:
@@ -450,9 +449,9 @@ class ControlUnit:
             elif state.operation=='or':
                 state.Alu_out=self.twoscomplement(state.RA,32)|self.twoscomplement(state.RB,32)
             elif state.operation=='sll':
-                temp=bin(state.RA)
+                temp=bin(state.RA).replace('0b','')
                 temp='0'*(32-len(temp))+temp
-                temp=temp[self.twoscomplement(state.RB)%32:]+'0'*self.twoscomplement(state.RB,32)%32
+                temp=temp[self.twoscomplement(state.RB,32)%32:]+'0'*(self.twoscomplement(state.RB,32)%32)
                 state.Alu_out=int(temp,2)
             elif state.operation=='slt':
                 if self.twoscomplement(state.RA,32)<self.twoscomplement(state.RB,32):
