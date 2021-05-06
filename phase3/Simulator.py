@@ -68,6 +68,7 @@ class Cache:
         self.array[Index].pop()
         self.array[Index].insert(0,[Tag,block])
 
+
 class ISB:
     def __init__(self,pc=0):
         self.operation=-1
@@ -169,6 +170,7 @@ class ControlUnit:
     def store_memory(self,ra,data,adr):
         for i in range(ra):
             d_in=(data>>(8*i))&(0xFF)
+            self.memoryCache.write(adr,self.MEM,1)
             self.MEM[adr]=d_in
             adr=adr+1
 
