@@ -118,7 +118,6 @@ if len(sys.argv)<2:
     print("Invalid Number of arguments")
 else:
     filename=sys.argv[1]
-    ComputerState=ControlUnit(filename)
     PC=0
     count_data_hazard=0
     count_stall=0
@@ -129,6 +128,10 @@ else:
     knob3 = int(input("Enable(1)/Disable(0) printing the values in the register file at the end of each cycle: "))
     knob4 = int(input("Enable(1)/Disable(0) printing information in the pipeline registers at the end of each cycle, along with cycle number. "))
     knob5 = int(input("Enter the instruction number for printing its pipeline register information/[Disable(-1)]: "))
+    cahce_size=int(input("Enter the cache size in bytes: "))
+    cahce_block_size=int(input("Enter Block size in bytes: "))
+    no_of_ways=int(input("No of ways of associativity: "))
+    ComputerState=ControlUnit(filename,cahce_size,cahce_block_size,no_of_ways)
     btb=BranchTargetBuffer()
     if knob1:
         in_states=[ISB() for i in range(5)]
@@ -282,4 +285,10 @@ else:
     print('Number of control hazards: '+str(count_control_hazard))
     print('Number of branch mispredictions: '+str(ComputerState.branch_mispred))
     print('Number of stalls due to data hazards: '+str(count_data_stall))
-    print('Number of stalls due to control hazards: '+str(count_control_stall))    
+    print('Number of stalls due to control hazards: '+str(count_control_stall))
+    print('Number of accesses of Instruction Cache: '+str(ComputerState.InstructionCache.access))
+    print('Number of hits of Instruction Cache: '+str(ComputerState.InstructionCache.hits))
+    print('Number of misses of Instruction Cache: '+str(ComputerState.InstructionCache.miss))
+    print('Number of accesses of Memory Cache: '+str(ComputerState.memoryCache.access))
+    print('Number of hits of Memory Cache: '+str(ComputerState.memoryCache.hits))
+    print('Number of misses of Memory Cache: '+str(ComputerState.memoryCache.miss))
