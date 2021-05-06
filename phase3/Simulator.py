@@ -34,7 +34,10 @@ class Cache:
         address=address//offset
         Tag=address>>(self.block_offset+self.index)
         Index=(address&int('1'*self.index+'0'*self.block_offset,2))>>(self.block_offset)
-        Block_Offset=address&int('1'*self.block_offset,2)
+        if self.block_offset!=0:
+            Block_Offset=address&int('1'*self.block_offset,2)
+        else:
+            Block_Offset=0
         temp_set=self.array[Index]
         block=-1
         for i in temp_set:
@@ -150,68 +153,84 @@ class ControlUnit:
             file.write(str(key)+" : "+str(self.MEM[key]))
             file.write('\n')
 
-    def fetch(self,state,btb):
-        try:
-            #state.IR=self.MachineCode[state.PC]
-            IR_temp=self.InstructionCache.search(state.PC,4)
-            if IR_temp:
-                state.IR=IR_temp
+    def get_memory(self,ra,state):
+        val=0
+        for i in range(ra):
+            adr=state.Alu_out+i
+            temp_val=self.memoryCache.search(adr,1)
+            if temp_val:
+                val+=temp_val*(1<<(8*i))
             else:
-                state.IR=self.MachineCode[state.PC]
-                self.InstructionCache.write(state.PC,self.MachineCode,4)
-            state.PC_temp=state.PC+4
-            state.is_actual_instruction=True
-            opcode=state.IR &(0x7F)
-            state.opcode=opcode
-            if opcode==99:
-                rs1=state.IR&(0xF8000)
-                rs1=rs1>>15
-                state.rs1=rs1
-                rs2=state.IR&(0x1F00000)
-                rs2=rs2>>20
-                state.rs2=rs2
-                func3=state.IR&(0x7000)
-                func3=func3>>12
-                temp=bin(state.IR).replace('0b','')
-                temp='0'*(32-len(temp))+temp
-                immediate=temp[0]+temp[-8]+temp[1:7]+temp[20:24]+'0'
-                state.imm=int(immediate,2)
-                if func3==0:
-                    state.operation='beq'
-                elif func3==1:
-                    state.operation='bne'
-                elif func3==5:
-                    state.operation='bge'
-                elif func3==4:
-                    state.operation='blt'
-            elif opcode==103:
-                rs1=state.IR&(0xF8000)
-                rs1=rs1>>15
-                state.rs1=rs1
-                imm=state.IR&(0xFFF00000)
-                imm=imm>>20
-                state.imm=imm
-                rd=state.IR&(0xF80)
-                rd=rd>>7
-                state.rd=rd
-                func3=state.IR&(0x7000)
-                func3=func3>>12
-                state.RA=self.RegisterFile[rs1] 
-                state.operation='jalr'                         
-            if btb==0:
-                return state
-            new_pc=0
-            outcome=False
-            if btb.targetBTB(state.PC)!=-1:
-                new_pc=btb.targetBTB(state.PC)
-                outcome=True
-            return  outcome,new_pc,state
-        except KeyError:
-            state.IR=0
+                self.memoryCache.write(adr,self.MEM,1)
+                if adr in self.MEM.keys():
+                    val=val+self.MEM[adr]*(1<<(8*i))
+        return val
+
+    def store_memory(self,ra,data,adr):
+        for i in range(ra):
+            d_in=(data>>(8*i))&(0xFF)
+            self.MEM[adr]=d_in
+            adr=adr+1
+
+    def fetch(self,state,btb):
+        IR_temp=self.InstructionCache.search(state.PC,4)
+        if IR_temp:
+            state.IR=IR_temp
+        else:
+            self.InstructionCache.write(state.PC,self.MachineCode,4)
+            state.IR=self.InstructionCache.search(state.PC,4)
+        if state.IR==0:
             state.is_actual_instruction=False
             if btb==0:
                 return state
-            return False,0,state
+            return False,0,state                
+        state.PC_temp=state.PC+4
+        state.is_actual_instruction=True
+        opcode=state.IR &(0x7F)
+        state.opcode=opcode
+        if opcode==99:
+            rs1=state.IR&(0xF8000)
+            rs1=rs1>>15
+            state.rs1=rs1
+            rs2=state.IR&(0x1F00000)
+            rs2=rs2>>20
+            state.rs2=rs2
+            func3=state.IR&(0x7000)
+            func3=func3>>12
+            temp=bin(state.IR).replace('0b','')
+            temp='0'*(32-len(temp))+temp
+            immediate=temp[0]+temp[-8]+temp[1:7]+temp[20:24]+'0'
+            state.imm=int(immediate,2)
+            if func3==0:
+                state.operation='beq'
+            elif func3==1:
+                state.operation='bne'
+            elif func3==5:
+                state.operation='bge'
+            elif func3==4:
+                state.operation='blt'
+        elif opcode==103:
+            rs1=state.IR&(0xF8000)
+            rs1=rs1>>15
+            state.rs1=rs1
+            imm=state.IR&(0xFFF00000)
+            imm=imm>>20
+            state.imm=imm
+            rd=state.IR&(0xF80)
+            rd=rd>>7
+            state.rd=rd
+            func3=state.IR&(0x7000)
+            func3=func3>>12
+            state.RA=self.RegisterFile[rs1] 
+            state.operation='jalr'                         
+        if btb==0:
+            return state
+        new_pc=0
+        outcome=False
+        if btb.targetBTB(state.PC)!=-1:
+            new_pc=btb.targetBTB(state.PC)
+            outcome=True
+        return  outcome,new_pc,state
 
     def decode(self,state,btb):
         control_hazard=False
@@ -487,47 +506,26 @@ class ControlUnit:
         if state.is_actual_instruction==False:
             return state
         if state.operation=='lb':
-            val=0
-            for i in range(1):
-                adr=state.Alu_out+i
-                if adr in self.MEM.keys():
-                    val=val+self.MEM[adr]*(1<<(8*i))
+            val=self.get_memory(1,state)
             state.MDR=self.twoscomplement(val,8)
         elif state.operation=='lh':
-            val=0
-            for i in range(2):
-                adr=state.Alu_out+i
-                if adr in self.MEM.keys():
-                    val=val+self.MEM[adr]*(1<<(8*i))
+            val=self.get_memory(2,state)
             state.MDR=self.twoscomplement(val,16)
         elif state.operation=='lw':
-            val=0
-            for i in range(4):
-                adr=state.Alu_out+i
-                if adr in self.MEM.keys():
-                    val=val+self.MEM[adr]*(1<<(8*i))
+            val=self.get_memory(4,state)
             state.MDR=self.twoscomplement(val,32)
         elif state.operation=='sb':
             adr=state.Alu_out
             data=self.RegisterFile[state.rs2]
-            for i in range(1):
-                d_in=(data>>(8*i))&(0xFF)
-                self.MEM[adr]=d_in
-                adr=adr+1
+            self.store_memory(1,data,adr)
         elif state.operation=='sh':
             adr=state.Alu_out
             data=self.RegisterFile[state.rs2]
-            for i in range(2):
-                d_in=(data>>(8*i))&(0xFF)
-                self.MEM[adr]=d_in
-                adr=adr+1
+            self.store_memory(2,data,adr)
         elif state.operation=='sw':
             adr=state.Alu_out
             data=self.RegisterFile[state.rs2]
-            for i in range(4):
-                d_in=(data>>(8*i))&(0xFF)
-                self.MEM[adr]=d_in
-                adr=adr+1
+            self.store_memory(4,data,adr)
         return state
 
     def write_back(self,state):
