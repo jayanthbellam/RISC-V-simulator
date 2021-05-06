@@ -23,8 +23,19 @@ README
              |- main.py
              |- simple_add.mc
         |- phase 2
-             |- Instruction.py
+             |- Factorial.mc
+             |- Fibonacci.mc
+             |- README.md
+             |- Simulator.py
+             |- design doc.docx
              |- main.py
+        |- phase 3
+             |- Factorial.mc
+             |- Fibonacci.mc
+             |- README.md
+             |- Simulator.py
+             |- design doc.docx
+             |- main.py 
         |     
         |- README.md
         |- design doc.docx
