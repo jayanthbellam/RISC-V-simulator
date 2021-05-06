@@ -29,10 +29,10 @@ class Cache:
         self.index=self.log2(self.sets)
         self.tag=32-self.block_offset-self.index
     
-    def search(self,address):
+    def search(self,address,offset):
         self.access+=1
-        address=address//4
-        Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)>>(self.block_offset+self.index)
+        address=address//offset
+        Tag=address>>(self.block_offset+self.index)
         Index=(address&int('1'*self.index+'0'*self.block_offset,2))>>(self.block_offset)
         Block_Offset=address&int('1'*self.block_offset,2)
         temp_set=self.array[Index]
@@ -50,16 +50,21 @@ class Cache:
         return False
     
     def write(self,address,Mem,offset):   #should be only called if the search function returns false
+        address=address//offset
         Tag=address&int('1'*self.tag+'0'*(self.index+self.block_offset),2)
         Index=address&int('1'*self.index+'0'*self.block_offset,2)
-        Block_address=Tag+Index
+        Block_address=(Tag+Index)
         block=[]
         for i in range(self.block_size):
-            block.append(Mem[Block_address+i*offset])
+            try:
+                block.append(Mem[(Block_address+i)*offset])
+            except KeyError:
+                block.append(0)
         Tag=Tag>>(self.block_offset+self.index)
         Index=Index>>(self.block_offset)
         self.array[Index].pop()
         self.array[Index].insert(0,[Tag,block])
+
 class ISB:
     def __init__(self,pc=0):
         self.operation=-1
@@ -148,12 +153,10 @@ class ControlUnit:
     def fetch(self,state,btb):
         try:
             #state.IR=self.MachineCode[state.PC]
-            IR_temp=self.InstructionCache.search(state.PC)
+            IR_temp=self.InstructionCache.search(state.PC,4)
             if IR_temp:
                 state.IR=IR_temp
-                print('hit')
             else:
-                print('miss')
                 state.IR=self.MachineCode[state.PC]
                 self.InstructionCache.write(state.PC,self.MachineCode,4)
             state.PC_temp=state.PC+4
