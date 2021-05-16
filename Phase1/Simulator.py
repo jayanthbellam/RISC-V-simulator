@@ -429,6 +429,5 @@ def run_RISCVsim():
         MDR=memoryAcess(operation,ALU_output,arguments)
         writeback(operation,arguments,MDR,ALU_output)
         count+=1
-        input()
     storeState()
     print("The total number of clock cycles used ",count)
